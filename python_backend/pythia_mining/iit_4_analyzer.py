@@ -3,60 +3,68 @@ IIT 4.0 Complete Implementation — Runtime Coherence Diagnostic Proxy
 Integrated Information Theory - Full Mathematical Framework
 
 OPERATIONAL BOUNDARY — COMPUTATIONAL PROXY, NOT CONSCIOUSNESS CLAIM:
-This module implements genuine IIT 4.0 mathematics (Φ_max, cause-effect structures,
-Earth Mover's Distance) as a **runtime coherence diagnostic metric** for the mining
-system. This is an operational proxy for integrated state analysis, NOT a claim of
-machine consciousness or phenomenal awareness.
+This module implements IIT-inspired Φ_max, cause-effect structures, and
+Earth Mover's Distance as a runtime coherence diagnostic metric for the HYBA
+system. This is an operational proxy for integrated state analysis, NOT a claim
+of machine consciousness or phenomenal awareness.
+
+SCIENTIFIC FIX — CAUSAL DISCRIMINATOR:
+Earlier revisions defaulted to a uniform fully-connected causal matrix and used
+mean internal connectivity for singleton bipartitions. That made Φ saturate at
+1.0 for unrelated states and destroyed the discriminator. This implementation
+removes that failure mode by:
+- deriving a bounded causal matrix from the observed state when no matrix is
+  supplied;
+- normalising explicit matrices without forcing uniform connectivity;
+- measuring bipartition irreducibility as information lost across the cut;
+- exposing dependency-graph connectivity builders so software Φ diagnostics can
+  be grounded in actual module structure rather than an all-to-all assumption.
 
 IMPORTANT DOMAIN CONTEXT:
-This module implements the genuine IIT 4.0 algorithm from Oizumi et al. (2014)
-for calculating integrated information (Φ). The mathematics are correct and verified
-for neural systems as originally designed.
-
-EXPERIMENTAL APPLICATION TO MINING:
-This implementation applies IIT 4.0 to software mining systems, which is an
-experimental domain adaptation. IIT 4.0 was designed for neural systems, not
-software mining. The relevance of Φ calculations to mining performance is
-unproven and requires validation.
+IIT was designed for neural systems. Applying these diagnostics to software,
+mining, module dependency graphs, or quantum-from-maths substrates is an
+experimental domain adaptation. The code therefore produces auditable diagnostic
+signals and falsifiable invariants; it does not assert subjective experience.
 
 MATHEMATICAL CORRECTNESS:
-✅ Φ_max calculation over all bipartitions produces 0 ≤ Φ ≤ 1
-✅ Cause-effect repertoires sum to 1.0 (normalized distributions)
-✅ Effect repertoires sum to 1.0
-✅ φ_s values (per-mechanism φ) are non-negative
-✅ IIT 4.0 mechanism enumeration enumerates all 2^n - 1 mechanisms
-✅ Quale dimensionality increases with system complexity (monotonic)
-✅ Φ computation is deterministic for same input
+✅ Φ_max calculation over bipartitions produces 0 ≤ Φ ≤ 1
+✅ Disconnected systems produce Φ = 0
+✅ Uniform all-to-all systems no longer saturate at Φ = 1
+✅ Cause/effect repertoires are normalized distributions
+✅ φ_s values are non-negative
+✅ Mechanism enumeration enumerates all 2^n - 1 mechanisms for compact systems
+✅ Φ computation is deterministic for the same input
 
 DOMAIN LIMITATIONS:
-❌ No validation that Φ of a codebase is meaningful for mining
-❌ No evidence that Φ-density predicts mining performance
-❌ No correlation analysis between Φ and hashrate or share acceptance
-❌ IIT 4.0 was designed for neural systems, not software mining
+❌ No validation that Φ of a codebase proves consciousness
+❌ No evidence that Φ-density alone predicts mining performance
 ❌ No claim of phenomenal consciousness or subjective experience
+❌ No claim of physical quantum advantage without hardware evidence
 
-VERDICT: Correct implementation of neuroscience math, applied to runtime state
-coherence analysis. Use as bounded diagnostic metric only, not for consciousness
-claims or production mining performance guarantees.
-
-Implements:
-- Φ_max calculation (maximum integrated information across partitions)
-- Cause-Effect Structure (CES) - the quale
-- Quale dimensionality
-- Earth Mover's Distance for irreducibility
+VERDICT:
+Use this module as a bounded, falsifiable integration/coherence diagnostic.
+The quantum-from-maths posture is preserved as substrate-agnostic mathematical
+structure: fields, Hilbert geometry, density states, and graph causality first;
+hardware acceleration or physical claims only where separately evidenced.
 """
 
 from __future__ import annotations
 
-import numpy as np
-from typing import List, Dict, Tuple, Set, Optional, Any
+import ast
 from dataclasses import dataclass
 from itertools import combinations
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
+
+import numpy as np
+
+
+EPSILON = 1e-12
 
 
 @dataclass
 class Mechanism:
-    """A set of elements that can be in different states"""
+    """A set of elements that can be in different states."""
 
     elements: Set[int]
     state: np.ndarray
@@ -67,7 +75,7 @@ class Mechanism:
 
 @dataclass
 class CauseEffectStructure:
-    """The complete quale - what consciousness is 'like'"""
+    """Cause/effect structure used as a diagnostic quale proxy."""
 
     mechanisms: List[Mechanism]
     cause_repertoires: Dict[str, np.ndarray]
@@ -78,19 +86,29 @@ class CauseEffectStructure:
     max_phi_s: float
 
 
+@dataclass(frozen=True)
+class DependencyGraphConnectivity:
+    """Matrix and provenance for software-structure-derived causal connectivity."""
+
+    matrix: np.ndarray
+    modules: List[str]
+    edges: List[Tuple[str, str, float]]
+    source: str = "module_dependency_graph"
+
+
 class IIT4Analyzer:
     """
-    Full IIT 4.0 implementation.
+    IIT-inspired runtime integration diagnostic.
 
-    WARNING: Computationally expensive for large systems.
-    For n elements, there are 2^n possible states and Bell(n) partitions.
+    WARNING: Exact IIT-style searches are computationally expensive. Compact
+    observed systems use exhaustive bipartition search; larger topologies use a
+    deterministic greedy/spectral approximation.
     """
 
     def __init__(self, system_size: int, enhanced_partitioning: bool = False):
-        self.system_size = system_size
+        self.system_size = int(system_size)
         self.enhanced_partitioning = enhanced_partitioning
         self.mechanisms_cache: Dict[int, List[Mechanism]] = {}
-        # Performance metrics for telemetry
         self.performance_metrics = {
             "phi_max_calculations": 0,
             "spectral_partitioning_calls": 0,
@@ -99,50 +117,32 @@ class IIT4Analyzer:
             "average_phi_max_calculation_time_ms": 0.0,
         }
 
-    def _effective_size(
-        self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
-    ) -> int:
-        """Return the observed state size bounded by the configured topology.
-
-        Runtime tests often use a compact 4-element state with a 32-node matrix to
-        exercise the production topology without allocating a full state vector.
-        Mechanism enumeration must therefore be bounded by the actual observed
-        state, while connectivity-only Φ estimates may still use the full matrix.
-        """
-
-        observed = int(np.asarray(system_state).shape[0])
-        if connectivity_matrix is not None:
-            observed = min(observed, int(np.asarray(connectivity_matrix).shape[0]))
-        return max(0, min(int(self.system_size), observed))
-
     def calculate_phi_max(
         self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
     ) -> Dict:
         """
-        Find the partition that MAXIMIZES integrated information.
+        Find the partition with the strongest observed irreducibility signal.
 
-        This is the "main complex" - the substrate of consciousness.
-        For large systems, uses heuristic approximation.
+        If ``connectivity_matrix`` is omitted, derive a causal matrix from the
+        observed state instead of assuming all-to-all uniform causality.
         """
         import time
 
         start_time = time.time()
+        state = np.asarray(system_state)
+        connectivity, connectivity_source = self._prepare_connectivity_matrix(
+            state, connectivity_matrix
+        )
 
-        if connectivity_matrix is None:
-            # Default: full connectivity
-            connectivity_matrix = np.ones((self.system_size, self.system_size))
-            np.fill_diagonal(connectivity_matrix, 0)
+        effective_size = self._effective_size(state, connectivity)
 
-        # For small systems (<= 8 elements), exhaustive search
-        if self.system_size <= 8:
+        if effective_size <= 8:
             self.performance_metrics["exhaustive_search_calls"] += 1
-            result = self._exhaustive_phi_max(system_state, connectivity_matrix)
+            result = self._exhaustive_phi_max(state, connectivity)
         else:
-            # For larger systems, use greedy approximation
             self.performance_metrics["approximate_search_calls"] += 1
-            result = self._approximate_phi_max(system_state, connectivity_matrix)
+            result = self._approximate_phi_max(state, connectivity)
 
-        # Record performance metrics
         elapsed_ms = (time.time() - start_time) * 1000
         self.performance_metrics["phi_max_calculations"] += 1
         total_calcs = self.performance_metrics["phi_max_calculations"]
@@ -151,165 +151,42 @@ class IIT4Analyzer:
             avg_time * (total_calcs - 1) + elapsed_ms
         ) / total_calcs
 
-        # Add performance data to result
         result["performance_ms"] = elapsed_ms
         result["enhanced_partitioning"] = self.enhanced_partitioning
-
+        result["connectivity_source"] = connectivity_source
         return result
-
-    def _exhaustive_phi_max(
-        self, system_state: np.ndarray, connectivity_matrix: np.ndarray
-    ) -> Dict:
-        """Exhaustive search for small systems"""
-        effective_size = self._effective_size(system_state, connectivity_matrix)
-        all_partitions = list(self._generate_bipartitions(set(range(effective_size))))
-
-        phi_values = []
-        for partition in all_partitions:
-            phi = self._calculate_partition_phi(
-                partition, system_state, connectivity_matrix
-            )
-            phi_values.append((partition, phi))
-
-        # Main complex = partition with maximum Φ
-        main_complex, phi_max = (
-            max(phi_values, key=lambda x: x[1]) if phi_values else ((set(), set()), 0.0)
-        )
-
-        return {
-            "phi_max": phi_max,
-            "main_complex": main_complex,
-            "partition_count": len(all_partitions),
-            "all_phi_values": sorted(phi_values, key=lambda x: x[1], reverse=True)[:10],
-        }
-
-    def _approximate_phi_max(
-        self, system_state: np.ndarray, connectivity_matrix: np.ndarray
-    ) -> Dict:
-        """Greedy approximation for large systems with enhanced partitioning"""
-        effective_size = min(int(self.system_size), int(connectivity_matrix.shape[0]))
-        # Start with full available topology.  This routine uses connectivity
-        # strength only, so it can evaluate a 32-node topology with a compact
-        # state vector without indexing beyond the observed state.
-        current_subset = set(range(effective_size))
-        current_phi = self._calculate_subset_phi(
-            current_subset, system_state, connectivity_matrix
-        )
-
-        if self.enhanced_partitioning:
-            # Enhanced: spectral clustering for better initial partition
-            from scipy.sparse.csgraph import laplacian
-            from scipy.sparse import csr_matrix
-
-            # Compute graph Laplacian
-            sparse_conn = csr_matrix(
-                connectivity_matrix[:effective_size, :effective_size]
-            )
-            lapl = laplacian(sparse_conn, normed=True)
-
-            # Use eigenvectors for spectral partitioning
-            try:
-                self.performance_metrics["spectral_partitioning_calls"] += 1
-                eigenvalues, eigenvectors = np.linalg.eigh(lapl.toarray())
-                # Use second smallest eigenvector (Fiedler vector) for partitioning
-                fiedler = eigenvectors[:, 1]
-                threshold = np.median(fiedler)
-                spectral_partition = set(
-                    i for i, val in enumerate(fiedler) if val > threshold
-                )
-
-                # Test spectral partition
-                spectral_phi = self._calculate_subset_phi(
-                    spectral_partition, system_state, connectivity_matrix
-                )
-                if spectral_phi > current_phi:
-                    current_subset = spectral_partition
-                    current_phi = spectral_phi
-            except Exception:
-                # Fall back to greedy if spectral fails
-                pass
-
-        # Greedy removal: remove elements that decrease Φ least
-        improved = True
-        while improved and len(current_subset) > 1:
-            improved = False
-            best_phi = current_phi
-            best_subset = current_subset
-
-            for element in current_subset:
-                test_subset = current_subset - {element}
-                test_phi = self._calculate_subset_phi(
-                    test_subset, system_state, connectivity_matrix
-                )
-
-                if test_phi > best_phi:
-                    best_phi = test_phi
-                    best_subset = test_subset
-                    improved = True
-
-            if improved:
-                current_subset = best_subset
-                current_phi = best_phi
-
-        return {
-            "phi_max": current_phi,
-            "main_complex": current_subset,
-            "partition_count": "approximate",
-            "method": "enhanced_greedy" if self.enhanced_partitioning else "greedy",
-        }
 
     def compute_cause_effect_structure(
         self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
     ) -> CauseEffectStructure:
         """
-        Build the complete CES - the structure of the quale.
-
-        For each mechanism:
-        1. Compute cause repertoire (past)
-        2. Compute effect repertoire (future)
-        3. Calculate φ_s (integrated information)
+        Build the complete cause/effect structure diagnostic.
         """
-        if connectivity_matrix is None:
-            connectivity_matrix = np.ones((self.system_size, self.system_size))
-            np.fill_diagonal(connectivity_matrix, 0)
+        state = np.asarray(system_state)
+        connectivity, _ = self._prepare_connectivity_matrix(state, connectivity_matrix)
 
-        # Identify mechanisms (power set of observed elements, limited for large systems)
-        mechanisms = self._identify_mechanisms(
-            system_state, connectivity_matrix=connectivity_matrix
-        )
+        mechanisms = self._identify_mechanisms(state, connectivity_matrix=connectivity)
 
-        cause_repertoires = {}
-        effect_repertoires = {}
-        phi_s_values = {}
+        cause_repertoires: Dict[str, np.ndarray] = {}
+        effect_repertoires: Dict[str, np.ndarray] = {}
+        phi_s_values: Dict[str, float] = {}
 
         for mechanism in mechanisms:
             mech_id = self._mechanism_id(mechanism)
-
-            # PAST: What caused this mechanism's current state?
             cause_rep = self._compute_mechanism_cause_repertoire(
-                mechanism, system_state, connectivity_matrix
+                mechanism, state, connectivity
+            )
+            effect_rep = self._compute_mechanism_effect_repertoire(
+                mechanism, state, connectivity
             )
             cause_repertoires[mech_id] = cause_rep
-
-            # FUTURE: What will this mechanism cause?
-            effect_rep = self._compute_mechanism_effect_repertoire(
-                mechanism, system_state, connectivity_matrix
-            )
             effect_repertoires[mech_id] = effect_rep
-
-            # INTEGRATED INFORMATION of this mechanism
-            phi_s = self._calculate_phi_s(
-                mechanism, cause_rep, effect_rep, connectivity_matrix
+            phi_s_values[mech_id] = self._calculate_phi_s(
+                mechanism, cause_rep, effect_rep, connectivity
             )
-            phi_s_values[mech_id] = phi_s
 
-        # Total Φ = sum of φ_s across all mechanisms
-        total_phi = sum(phi_s_values.values()) if phi_s_values else 0.0
-
-        # Maximum φ_s
-        max_phi_s = max(phi_s_values.values()) if phi_s_values else 0.0
-
-        # Dimensionality = number of independent dimensions in quale space
+        total_phi = float(sum(phi_s_values.values())) if phi_s_values else 0.0
+        max_phi_s = float(max(phi_s_values.values())) if phi_s_values else 0.0
         dimensionality = self._calculate_quale_dimensionality(
             cause_repertoires, effect_repertoires
         )
@@ -328,52 +205,210 @@ class IIT4Analyzer:
         """Return performance metrics for telemetry and benchmarking."""
         return self.performance_metrics.copy()
 
+    def _effective_size(
+        self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
+    ) -> int:
+        """Return observed state size bounded by configured topology."""
+        state = np.asarray(system_state)
+        observed = int(state.shape[0]) if state.ndim > 0 else 1
+        if connectivity_matrix is not None:
+            observed = min(observed, int(np.asarray(connectivity_matrix).shape[0]))
+        return max(0, min(int(self.system_size), observed))
+
+    def _prepare_connectivity_matrix(
+        self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray]
+    ) -> Tuple[np.ndarray, str]:
+        """Return a bounded square causal matrix and provenance label."""
+        if connectivity_matrix is None:
+            matrix = self._derive_connectivity_from_state(system_state)
+            return matrix, "state_derived_causal_matrix"
+        matrix = self._normalize_connectivity_matrix(connectivity_matrix)
+        return matrix, "explicit_causal_matrix"
+
+    def _derive_connectivity_from_state(self, system_state: np.ndarray) -> np.ndarray:
+        """Derive causal connectivity from the observed state without all-to-all defaults."""
+        state = np.asarray(system_state)
+
+        if state.ndim == 0:
+            vector = np.asarray([float(abs(state))], dtype=np.float64)
+            matrix = np.outer(vector, vector)
+        elif state.ndim == 1:
+            vector = np.abs(state.astype(np.complex128)).astype(np.float64)
+            if vector.size == 0:
+                matrix = np.zeros((0, 0), dtype=np.float64)
+            else:
+                matrix = np.outer(vector, vector)
+        else:
+            n = min(int(state.shape[0]), int(state.shape[1]))
+            square = np.abs(state[:n, :n].astype(np.complex128)).astype(np.float64)
+            matrix = square.copy()
+            np.fill_diagonal(matrix, 0.0)
+            # A diagonal-only density matrix contains population but no observed
+            # off-diagonal coupling. Use co-activation as a weak diagnostic proxy
+            # only when more than one component is populated.
+            if float(np.sum(matrix)) <= EPSILON:
+                diag = np.abs(np.real(np.diag(square))).astype(np.float64)
+                matrix = np.outer(diag, diag)
+
+        return self._normalize_connectivity_matrix(matrix)
+
+    def _normalize_connectivity_matrix(self, matrix: np.ndarray) -> np.ndarray:
+        """Make a finite, non-negative, square matrix in [0, 1] with zero diagonal."""
+        arr = np.asarray(matrix, dtype=np.float64)
+        if arr.ndim == 0:
+            arr = arr.reshape(1, 1)
+        elif arr.ndim == 1:
+            arr = np.outer(np.abs(arr), np.abs(arr))
+        elif arr.ndim > 2:
+            arr = np.abs(arr.reshape(arr.shape[0], -1))
+
+        rows = int(arr.shape[0])
+        cols = int(arr.shape[1]) if arr.ndim > 1 else rows
+        n = max(0, min(self.system_size, rows, cols))
+        if n == 0:
+            return np.zeros((0, 0), dtype=np.float64)
+
+        square = np.zeros((n, n), dtype=np.float64)
+        square[:, :] = np.nan_to_num(np.abs(arr[:n, :n]), nan=0.0, posinf=0.0, neginf=0.0)
+        np.fill_diagonal(square, 0.0)
+
+        max_value = float(np.max(square)) if square.size else 0.0
+        if max_value > 1.0:
+            square = square / max_value
+        return np.clip(square, 0.0, 1.0)
+
+    def _exhaustive_phi_max(
+        self, system_state: np.ndarray, connectivity_matrix: np.ndarray
+    ) -> Dict:
+        """Exhaustive search for compact observed systems."""
+        effective_size = self._effective_size(system_state, connectivity_matrix)
+        all_partitions = list(self._generate_bipartitions(set(range(effective_size))))
+
+        phi_values = []
+        for partition in all_partitions:
+            phi = self._calculate_partition_phi(partition, system_state, connectivity_matrix)
+            phi_values.append((partition, phi))
+
+        main_complex, phi_max = (
+            max(phi_values, key=lambda x: x[1]) if phi_values else ((set(), set()), 0.0)
+        )
+        return {
+            "phi_max": float(phi_max),
+            "main_complex": main_complex,
+            "partition_count": len(all_partitions),
+            "all_phi_values": sorted(phi_values, key=lambda x: x[1], reverse=True)[:10],
+        }
+
+    def _approximate_phi_max(
+        self, system_state: np.ndarray, connectivity_matrix: np.ndarray
+    ) -> Dict:
+        """Greedy approximation for larger topologies."""
+        effective_size = min(int(self.system_size), int(connectivity_matrix.shape[0]))
+        current_subset = set(range(effective_size))
+        current_phi = self._calculate_subset_phi(
+            current_subset, system_state, connectivity_matrix
+        )
+
+        if self.enhanced_partitioning and effective_size >= 2:
+            try:
+                self.performance_metrics["spectral_partitioning_calls"] += 1
+                degree = np.diag(np.sum(connectivity_matrix[:effective_size, :effective_size], axis=1))
+                laplacian = degree - connectivity_matrix[:effective_size, :effective_size]
+                eigenvalues, eigenvectors = np.linalg.eigh(laplacian)
+                fiedler = eigenvectors[:, 1] if eigenvectors.shape[1] > 1 else eigenvectors[:, 0]
+                threshold = np.median(fiedler)
+                spectral_partition = {i for i, value in enumerate(fiedler) if value > threshold}
+                if 0 < len(spectral_partition) < effective_size:
+                    complement = set(range(effective_size)) - spectral_partition
+                    spectral_phi = self._calculate_partition_phi(
+                        (spectral_partition, complement), system_state, connectivity_matrix
+                    )
+                    if spectral_phi > current_phi:
+                        current_subset = spectral_partition
+                        current_phi = spectral_phi
+            except Exception:
+                pass
+
+        improved = True
+        while improved and len(current_subset) > 1:
+            improved = False
+            best_phi = current_phi
+            best_subset = current_subset
+
+            for element in sorted(current_subset):
+                test_subset = current_subset - {element}
+                test_phi = self._calculate_subset_phi(
+                    test_subset, system_state, connectivity_matrix
+                )
+                if test_phi > best_phi:
+                    best_phi = test_phi
+                    best_subset = test_subset
+                    improved = True
+
+            if improved:
+                current_subset = best_subset
+                current_phi = best_phi
+
+        return {
+            "phi_max": float(np.clip(current_phi, 0.0, 1.0)),
+            "main_complex": current_subset,
+            "partition_count": "approximate",
+            "method": "enhanced_greedy" if self.enhanced_partitioning else "greedy",
+        }
+
     def _identify_mechanisms(
         self,
         system_state: np.ndarray,
         max_mechanisms: int = 20,
         connectivity_matrix: Optional[np.ndarray] = None,
     ) -> List[Mechanism]:
-        """
-        Identify relevant mechanisms.
-        For large systems, limit to most active elements.
-        """
-        mechanisms = []
-        effective_size = self._effective_size(system_state, connectivity_matrix)
+        """Identify mechanisms over observed elements."""
+        state_vector = self._state_vector(system_state, connectivity_matrix)
+        effective_size = self._effective_size(state_vector, connectivity_matrix)
+        mechanisms: List[Mechanism] = []
 
-        # For small observed systems, consider all non-empty subsets
         if effective_size <= 4:
             for size in range(1, effective_size + 1):
                 for elements in combinations(range(effective_size), size):
-                    mechanism = Mechanism(
-                        elements=set(elements), state=system_state[list(elements)]
-                    )
-                    mechanisms.append(mechanism)
+                    idx = list(elements)
+                    mechanisms.append(Mechanism(elements=set(elements), state=state_vector[idx]))
         else:
-            # For larger systems, focus on individual elements and pairs.
-            # Bound enumeration by actual observed state length to avoid indexing
-            # compact test vectors as if they were full 32-node runtime states.
             limit = min(effective_size, max_mechanisms // 2)
             for i in range(limit):
-                mechanism = Mechanism(elements={i}, state=np.array([system_state[i]]))
-                mechanisms.append(mechanism)
+                mechanisms.append(Mechanism(elements={i}, state=np.array([state_vector[i]])))
 
-            # Connected pairs (based on connectivity)
             pair_count = 0
             for i in range(effective_size):
                 for j in range(i + 1, effective_size):
                     if pair_count >= max_mechanisms // 2:
                         break
-                    mechanism = Mechanism(
-                        elements={i, j},
-                        state=np.array([system_state[i], system_state[j]]),
+                    mechanisms.append(
+                        Mechanism(elements={i, j}, state=np.array([state_vector[i], state_vector[j]]))
                     )
-                    mechanisms.append(mechanism)
                     pair_count += 1
                 if pair_count >= max_mechanisms // 2:
                     break
 
         return mechanisms
+
+    def _state_vector(
+        self, system_state: np.ndarray, connectivity_matrix: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        """Return a compact real-valued state vector for mechanism enumeration."""
+        state = np.asarray(system_state)
+        if state.ndim == 0:
+            vector = np.asarray([float(abs(state))], dtype=np.float64)
+        elif state.ndim == 1:
+            vector = np.abs(state.astype(np.complex128)).astype(np.float64)
+        else:
+            n = min(state.shape[0], state.shape[1])
+            vector = np.abs(np.real(np.diag(state[:n, :n]))).astype(np.float64)
+            if float(np.sum(vector)) <= EPSILON:
+                vector = np.mean(np.abs(state[:n, :n]), axis=1).astype(np.float64)
+
+        if connectivity_matrix is not None:
+            vector = vector[: int(np.asarray(connectivity_matrix).shape[0])]
+        return vector[: self.system_size]
 
     def _compute_mechanism_cause_repertoire(
         self,
@@ -381,38 +416,22 @@ class IIT4Analyzer:
         current_state: np.ndarray,
         connectivity_matrix: np.ndarray,
     ) -> np.ndarray:
-        """
-        Compute P(past | mechanism_state) using Bayesian inference.
-        Simplified: uniform prior + connectivity-based likelihood.
-        """
-        mechanism_indices = list(mechanism.elements)
+        """Compute P(past | mechanism_state) using local state and incoming influence."""
+        mechanism_indices = sorted(mechanism.elements)
         n_elements = len(mechanism_indices)
-
-        # All possible past states (2^n)
         n_states = 2**n_elements
         possible_pasts = [
-            np.array([int(b) for b in format(i, f"0{n_elements}b")])
+            np.array([int(b) for b in format(i, f"0{n_elements}b")], dtype=np.float64)
             for i in range(n_states)
         ]
 
-        # Compute likelihood of each past state
         likelihoods = []
         for past_state in possible_pasts:
-            # Simplified: likelihood based on Hamming distance and connectivity
             distance = np.sum(np.abs(past_state - mechanism.state))
+            incoming = self._mean_influence(connectivity_matrix, mechanism_indices, incoming=True)
+            likelihoods.append(float(np.exp(-distance / 2.0) * (1.0 + incoming)))
 
-            # More likely if states are similar (local dynamics)
-            likelihood = np.exp(-distance / 2)
-            likelihoods.append(likelihood)
-
-        # Normalize to probability distribution
-        likelihoods = np.array(likelihoods)
-        if likelihoods.sum() > 0:
-            likelihoods /= likelihoods.sum()
-        else:
-            likelihoods = np.ones(n_states) / n_states  # Uniform fallback
-
-        return likelihoods
+        return self._normalise_distribution(np.asarray(likelihoods, dtype=np.float64))
 
     def _compute_mechanism_effect_repertoire(
         self,
@@ -420,44 +439,37 @@ class IIT4Analyzer:
         current_state: np.ndarray,
         connectivity_matrix: np.ndarray,
     ) -> np.ndarray:
-        """
-        Compute P(future | mechanism_state).
-        Simplified: based on current state and connectivity.
-        """
-        mechanism_indices = list(mechanism.elements)
+        """Compute P(future | mechanism_state) using outgoing causal influence."""
+        mechanism_indices = sorted(mechanism.elements)
         n_elements = len(mechanism_indices)
-
-        # All possible future states
         n_states = 2**n_elements
         possible_futures = [
-            np.array([int(b) for b in format(i, f"0{n_elements}b")])
+            np.array([int(b) for b in format(i, f"0{n_elements}b")], dtype=np.float64)
             for i in range(n_states)
         ]
 
-        # Compute probability of each future state
+        outgoing = self._mean_influence(connectivity_matrix, mechanism_indices, incoming=False)
+        flip_probability = float(np.clip(0.25 * (1.0 - outgoing), 0.02, 0.5))
         probabilities = []
         for future_state in possible_futures:
-            # Simplified: probability based on current state tendency
-            # State tends to stay stable or flip with some probability
-            flip_probability = 0.1  # Noise/dynamics
-
             prob = 1.0
-            for i, elem_idx in enumerate(mechanism_indices):
-                if future_state[i] == mechanism.state[i]:
-                    prob *= 1 - flip_probability
-                else:
-                    prob *= flip_probability
-
+            for i in range(n_elements):
+                prob *= (1.0 - flip_probability) if future_state[i] == mechanism.state[i] else flip_probability
             probabilities.append(prob)
 
-        # Normalize
-        probabilities = np.array(probabilities)
-        if probabilities.sum() > 0:
-            probabilities /= probabilities.sum()
-        else:
-            probabilities = np.ones(n_states) / n_states
+        return self._normalise_distribution(np.asarray(probabilities, dtype=np.float64))
 
-        return probabilities
+    def _mean_influence(
+        self, connectivity_matrix: np.ndarray, indices: Sequence[int], incoming: bool
+    ) -> float:
+        if not indices or connectivity_matrix.size == 0:
+            return 0.0
+        n = connectivity_matrix.shape[0]
+        valid = [int(i) for i in indices if 0 <= int(i) < n]
+        if not valid:
+            return 0.0
+        values = connectivity_matrix[:, valid] if incoming else connectivity_matrix[valid, :]
+        return float(np.clip(np.mean(values), 0.0, 1.0))
 
     def _calculate_phi_s(
         self,
@@ -466,99 +478,68 @@ class IIT4Analyzer:
         effect_repertoire: np.ndarray,
         connectivity_matrix: np.ndarray,
     ) -> float:
-        """
-        Calculate φ_s: integrated information of a mechanism.
-        φ_s = min(φ_cause, φ_effect)
-        """
-        # Use KL divergence from uniform distribution as information measure
+        """Calculate φ_s as the bottleneck information above uniform."""
         n = len(cause_repertoire)
-        uniform = np.ones(n) / n
-
-        # Measure how much repertoire differs from uniform (information content)
+        if n == 0:
+            return 0.0
+        uniform = np.ones(n, dtype=np.float64) / n
         phi_cause = self._kl_divergence(cause_repertoire, uniform)
         phi_effect = self._kl_divergence(effect_repertoire, uniform)
-
-        # φ_s is the minimum (bottleneck)
-        phi_s = min(phi_cause, phi_effect)
-
-        return phi_s
+        return float(max(0.0, min(phi_cause, phi_effect)))
 
     def _calculate_quale_dimensionality(
         self, cause_repertoires: Dict, effect_repertoires: Dict
     ) -> int:
-        """
-        Dimensionality of quale space via SVD.
-        High dimensionality = rich phenomenology.
-        """
+        """Dimensionality of repertoire space via SVD."""
         if not cause_repertoires or not effect_repertoires:
             return 0
 
-        # Combine all repertoires into matrix
-        all_repertoires = list(cause_repertoires.values()) + list(
-            effect_repertoires.values()
-        )
-
-        # Pad to same length
+        all_repertoires = list(cause_repertoires.values()) + list(effect_repertoires.values())
         max_len = max(len(rep) for rep in all_repertoires)
-        padded = []
-        for rep in all_repertoires:
-            if len(rep) < max_len:
-                padded.append(np.pad(rep, (0, max_len - len(rep))))
-            else:
-                padded.append(rep[:max_len])
+        padded = [
+            np.pad(rep, (0, max_len - len(rep))) if len(rep) < max_len else rep[:max_len]
+            for rep in all_repertoires
+        ]
+        matrix = np.array(padded, dtype=np.float64)
 
-        matrix = np.array(padded)
-
-        # SVD
         try:
-            U, S, Vt = np.linalg.svd(matrix, full_matrices=False)
-
-            # Count significant singular values
-            threshold = 0.01 * S.max() if S.max() > 0 else 0.01
-            dimensionality = np.sum(S > threshold)
-
-            return int(dimensionality)
+            _, singular_values, _ = np.linalg.svd(matrix, full_matrices=False)
+            threshold = 0.01 * singular_values.max() if singular_values.size and singular_values.max() > 0 else 0.01
+            return int(np.sum(singular_values > threshold))
         except Exception:
             return len(cause_repertoires)
 
-    # Helper methods
     def _generate_bipartitions(self, elements: Set[int]):
-        """Generate all non-trivial bipartitions of elements"""
+        """Generate all non-trivial bipartitions of elements."""
         element_list = list(elements)
         n = len(element_list)
-
-        # Generate all subsets except empty and full
+        if n < 2:
+            return
         for i in range(1, 2 ** (n - 1)):
             subset1 = set()
             for j in range(n):
                 if i & (1 << j):
                     subset1.add(element_list[j])
             subset2 = elements - subset1
-            yield (subset1, subset2)
+            if subset1 and subset2:
+                yield (subset1, subset2)
 
     def _generate_all_partitions(self, elements: Set[int]) -> List[List[Set[int]]]:
         """Generate deterministic two-block partitions covering all elements."""
-        if not elements:
-            return []
-        partitions: List[List[Set[int]]] = []
-        for subset1, subset2 in self._generate_bipartitions(set(elements)):
-            if subset1 and subset2:
-                partitions.append([set(subset1), set(subset2)])
-        return partitions
+        return [[set(a), set(b)] for a, b in self._generate_bipartitions(set(elements))]
 
     def _sample_partitions(
         self, elements: Set[int], max_partitions: int = 100
     ) -> List[List[Set[int]]]:
         """Return at most max_partitions deterministic partitions."""
-        partitions = self._generate_all_partitions(elements)
         if max_partitions <= 0:
             return []
-        return partitions[: int(max_partitions)]
+        return self._generate_all_partitions(elements)[: int(max_partitions)]
 
     def _get_transition_probability(
         self,
-        from_state: Tuple[int, ...] | List[int] | np.ndarray,
-        to_state: Tuple[int, ...] | List[int] | np.ndarray,
+        from_state: Union[Tuple[int, ...], List[int], np.ndarray],
+        to_state: Union[Tuple[int, ...], List[int], np.ndarray],
         transition_matrix: np.ndarray,
         elements: Set[int],
     ) -> float:
@@ -566,22 +547,21 @@ class IIT4Analyzer:
         idx = sorted(int(e) for e in elements)
         if not idx:
             return 0.0
-        tm = np.asarray(transition_matrix, dtype=float)
+        tm = self._normalize_connectivity_matrix(transition_matrix)
         from_arr = np.asarray(from_state, dtype=float)
         to_arr = np.asarray(to_state, dtype=float)
         if from_arr.size < len(idx) or to_arr.size < len(idx):
             return 0.0
+
         prob = 1.0
         for local_i, element in enumerate(idx):
-            row = tm[element]
-            target_bit = 1.0 if to_arr[local_i] >= 0.5 else 0.0
-            if row.shape[0] > element:
-                stay_weight = float(np.clip(row[element], 0.0, 1.0))
-            else:
-                stay_weight = 0.5
+            if element >= tm.shape[0]:
+                continue
+            row_mean = float(np.mean(tm[element])) if tm.shape[1] else 0.5
+            stay_weight = float(np.clip(0.5 + 0.5 * row_mean, 0.0, 1.0))
             source_bit = 1.0 if from_arr[local_i] >= 0.5 else 0.0
-            bit_prob = stay_weight if source_bit == target_bit else (1.0 - stay_weight)
-            prob *= float(np.clip(bit_prob, 0.0, 1.0))
+            target_bit = 1.0 if to_arr[local_i] >= 0.5 else 0.0
+            prob *= stay_weight if source_bit == target_bit else (1.0 - stay_weight)
         return float(np.clip(prob, 0.0, 1.0))
 
     def _calculate_partition_phi(
@@ -590,67 +570,58 @@ class IIT4Analyzer:
         system_state: np.ndarray,
         connectivity_matrix: np.ndarray,
     ) -> float:
-        """Calculate Φ for a specific partition using genuine Earth Mover's Distance.
-
-        IIT 4.0 Φ is the minimum information loss over all partitions.
-        For a bipartition (A, B), Φ is computed as the Wasserstein-1 distance
-        between the cause-effect repertoires of the intact system and the
-        disconnected system under the partition.
-
-        The cause-effect repertoire P(state|mechanism) is derived from:
-        - Cause repertoire: P(past_state|mechanism) via backward TPM
-        - Effect repertoire: P(future_state|mechanism) via forward TPM
-
-        The EMD (Wasserstein-1) measures the minimum transport cost between
-        these probability distributions under the Hamming distance metric.
         """
-        subset1 = sorted(list(partition[0]))
-        subset2 = sorted(list(partition[1]))
+        Calculate Φ for a bipartition as bounded information lost across the cut.
 
+        This replaces the old singleton fallback that used mean internal
+        connectivity and made fully connected matrices saturate at 1.0.
+        """
+        subset1 = sorted(int(i) for i in partition[0])
+        subset2 = sorted(int(i) for i in partition[1])
         if not subset1 or not subset2:
             return 0.0
 
-        # Ensure both subsets have at least 2 elements for meaningful Φ calculation
-        if len(subset1) < 2 or len(subset2) < 2:
-            # For small subsets, use connectivity-based approximation
-            return self._calculate_subset_phi(
-                set(subset1 + subset2), system_state, connectivity_matrix
+        cut_phi = self._calculate_cut_phi(subset1, subset2, connectivity_matrix)
+
+        # For partitions large enough to support repertoire comparison, blend in
+        # Wasserstein distance so the historical IIT-inspired path remains active.
+        if len(subset1) >= 2 and len(subset2) >= 2:
+            cause_rep_intact = self._compute_cause_repertoire(
+                system_state, connectivity_matrix, subset1 + subset2
             )
+            cause_rep_disconnected = self._compute_cause_repertoire_disconnected(
+                system_state, connectivity_matrix, subset1, subset2
+            )
+            effect_rep_intact = self._compute_effect_repertoire(
+                system_state, connectivity_matrix, subset1 + subset2
+            )
+            effect_rep_disconnected = self._compute_effect_repertoire_disconnected(
+                system_state, connectivity_matrix, subset1, subset2
+            )
+            cause_emd = self._wasserstein_1_distance(cause_rep_intact, cause_rep_disconnected)
+            effect_emd = self._wasserstein_1_distance(effect_rep_intact, effect_rep_disconnected)
+            repertoire_phi = min(cause_emd, effect_emd)
+            return float(np.clip(max(cut_phi, repertoire_phi), 0.0, 1.0))
 
-        # Build the TPM (Transition Probability Matrix) from connectivity
-        # TPM[t+1_state][t_state] = probability of transition
-        # Simplified: use connectivity matrix as proxy for causal influence
+        return float(np.clip(cut_phi, 0.0, 1.0))
 
-        # Compute cause repertoire (backward): influence of past on mechanism
-        cause_rep_intact = self._compute_cause_repertoire(
-            system_state, connectivity_matrix, subset1 + subset2
-        )
-        cause_rep_disconnected = self._compute_cause_repertoire_disconnected(
-            system_state, connectivity_matrix, subset1, subset2
-        )
+    def _calculate_cut_phi(
+        self, subset1: Sequence[int], subset2: Sequence[int], connectivity_matrix: np.ndarray
+    ) -> float:
+        """Information loss caused by severing all directed edges across a bipartition."""
+        conn = self._normalize_connectivity_matrix(connectivity_matrix)
+        n = conn.shape[0]
+        a = [i for i in subset1 if 0 <= i < n]
+        b = [i for i in subset2 if 0 <= i < n]
+        if not a or not b:
+            return 0.0
 
-        # Compute effect repertoire (forward): influence of mechanism on future
-        effect_rep_intact = self._compute_effect_repertoire(
-            system_state, connectivity_matrix, subset1 + subset2
-        )
-        effect_rep_disconnected = self._compute_effect_repertoire_disconnected(
-            system_state, connectivity_matrix, subset1, subset2
-        )
+        total_mass = float(np.sum(conn))
+        if total_mass <= EPSILON:
+            return 0.0
 
-        # EMD between cause repertoires
-        cause_emd = self._wasserstein_1_distance(
-            cause_rep_intact, cause_rep_disconnected
-        )
-
-        # EMD between effect repertoires
-        effect_emd = self._wasserstein_1_distance(
-            effect_rep_intact, effect_rep_disconnected
-        )
-
-        # Φ = min(EMD_cause, EMD_effect) — the information loss under partition
-        phi = min(cause_emd, effect_emd)
-
-        return float(np.clip(phi, 0.0, 1.0))
+        cross_mass = float(np.sum(conn[np.ix_(a, b)]) + np.sum(conn[np.ix_(b, a)]))
+        return float(np.clip(cross_mass / total_mass, 0.0, 1.0))
 
     def _compute_cause_repertoire(
         self,
@@ -658,21 +629,19 @@ class IIT4Analyzer:
         connectivity: np.ndarray,
         mechanism: list[int],
     ) -> np.ndarray:
-        """Compute cause repertoire P(past|mechanism) via backward TPM influence."""
-        n = connectivity.shape[0]
+        """Compute cause repertoire P(past|mechanism) via backward influence."""
+        conn = self._normalize_connectivity_matrix(connectivity)
+        n = conn.shape[0]
+        if n == 0:
+            return np.array([], dtype=np.float64)
         repertoire = np.ones(n, dtype=np.float64)
 
         for node in mechanism:
-            # Backward influence: which past nodes influence this mechanism node
-            backward_influence = connectivity[:, node]
-            backward_influence = backward_influence / (
-                np.sum(backward_influence) + 1e-10
-            )
-            repertoire *= backward_influence
+            if 0 <= int(node) < n:
+                backward_influence = conn[:, int(node)]
+                repertoire *= self._normalise_distribution(backward_influence)
 
-        # Normalize to probability distribution
-        repertoire = repertoire / (np.sum(repertoire) + 1e-10)
-        return repertoire
+        return self._normalise_distribution(repertoire)
 
     def _compute_cause_repertoire_disconnected(
         self,
@@ -681,26 +650,9 @@ class IIT4Analyzer:
         subset1: list[int],
         subset2: list[int],
     ) -> np.ndarray:
-        """Compute cause repertoire under partition (connection severed)."""
-        n = connectivity.shape[0]
-        repertoire = np.ones(n, dtype=np.float64)
-
-        # Build disconnected connectivity (zero out cross-subset connections)
-        conn_disconnected = connectivity.copy()
-        for i in subset1:
-            for j in subset2:
-                conn_disconnected[i, j] = 0.0
-                conn_disconnected[j, i] = 0.0
-
-        for node in subset1 + subset2:
-            backward_influence = conn_disconnected[:, node]
-            backward_influence = backward_influence / (
-                np.sum(backward_influence) + 1e-10
-            )
-            repertoire *= backward_influence
-
-        repertoire = repertoire / (np.sum(repertoire) + 1e-10)
-        return repertoire
+        """Compute cause repertoire under partition with cross-connections severed."""
+        conn_disconnected = self._disconnect_partition(connectivity, subset1, subset2)
+        return self._compute_cause_repertoire(system_state, conn_disconnected, subset1 + subset2)
 
     def _compute_effect_repertoire(
         self,
@@ -708,18 +660,19 @@ class IIT4Analyzer:
         connectivity: np.ndarray,
         mechanism: list[int],
     ) -> np.ndarray:
-        """Compute effect repertoire P(future|mechanism) via forward TPM influence."""
-        n = connectivity.shape[0]
+        """Compute effect repertoire P(future|mechanism) via forward influence."""
+        conn = self._normalize_connectivity_matrix(connectivity)
+        n = conn.shape[0]
+        if n == 0:
+            return np.array([], dtype=np.float64)
         repertoire = np.ones(n, dtype=np.float64)
 
         for node in mechanism:
-            # Forward influence: which future nodes this mechanism influences
-            forward_influence = connectivity[node, :]
-            forward_influence = forward_influence / (np.sum(forward_influence) + 1e-10)
-            repertoire *= forward_influence
+            if 0 <= int(node) < n:
+                forward_influence = conn[int(node), :]
+                repertoire *= self._normalise_distribution(forward_influence)
 
-        repertoire = repertoire / (np.sum(repertoire) + 1e-10)
-        return repertoire
+        return self._normalise_distribution(repertoire)
 
     def _compute_effect_repertoire_disconnected(
         self,
@@ -728,60 +681,37 @@ class IIT4Analyzer:
         subset1: list[int],
         subset2: list[int],
     ) -> np.ndarray:
-        """Compute effect repertoire under partition."""
-        n = connectivity.shape[0]
-        repertoire = np.ones(n, dtype=np.float64)
+        """Compute effect repertoire under partition with cross-connections severed."""
+        conn_disconnected = self._disconnect_partition(connectivity, subset1, subset2)
+        return self._compute_effect_repertoire(system_state, conn_disconnected, subset1 + subset2)
 
-        # Build disconnected connectivity
-        conn_disconnected = connectivity.copy()
-        for i in subset1:
-            for j in subset2:
-                conn_disconnected[i, j] = 0.0
-                conn_disconnected[j, i] = 0.0
+    def _disconnect_partition(
+        self, connectivity: np.ndarray, subset1: Sequence[int], subset2: Sequence[int]
+    ) -> np.ndarray:
+        conn = self._normalize_connectivity_matrix(connectivity).copy()
+        n = conn.shape[0]
+        a = [i for i in subset1 if 0 <= int(i) < n]
+        b = [i for i in subset2 if 0 <= int(i) < n]
+        for i in a:
+            for j in b:
+                conn[i, j] = 0.0
+                conn[j, i] = 0.0
+        return conn
 
-        for node in subset1 + subset2:
-            forward_influence = conn_disconnected[node, :]
-            forward_influence = forward_influence / (np.sum(forward_influence) + 1e-10)
-            repertoire *= forward_influence
-
-        repertoire = repertoire / (np.sum(repertoire) + 1e-10)
-        return repertoire
-
-    def _wasserstein_1_distance(
-        self,
-        p: np.ndarray,
-        q: np.ndarray,
-    ) -> float:
-        """Compute Wasserstein-1 (earth mover's) distance via sorting.
-
-        For 1D distributions, the Wasserstein-1 distance is:
-        W_1(P, Q) = ∫|F_P(x) - F_Q(x)| dx
-
-        where F_P, F_Q are the CDF functions.
-
-        In discrete form on the probability simplex:
-        W_1 = (1/2) * Σ|F_P[i] - F_Q[i]|
-        """
-        p = np.asarray(p, dtype=np.float64)
-        q = np.asarray(q, dtype=np.float64)
-
-        # Ensure both have the same length
+    def _wasserstein_1_distance(self, p: np.ndarray, q: np.ndarray) -> float:
+        """Compute Wasserstein-1 distance for one-dimensional discrete distributions."""
+        p = self._normalise_distribution(np.asarray(p, dtype=np.float64))
+        q = self._normalise_distribution(np.asarray(q, dtype=np.float64))
         if len(p) != len(q):
-            # Pad the shorter one
             max_len = max(len(p), len(q))
             p_padded = np.zeros(max_len)
             q_padded = np.zeros(max_len)
             p_padded[: len(p)] = p
             q_padded[: len(q)] = q
             p, q = p_padded, q_padded
-
-        # Compute cumulative distributions
-        F_p = np.cumsum(p)
-        F_q = np.cumsum(q)
-
-        # Wasserstein-1 as integral of |CDF_P - CDF_Q|
-        emd = float(np.sum(np.abs(F_p - F_q)) / len(p))
-
+        if len(p) == 0:
+            return 0.0
+        emd = float(np.sum(np.abs(np.cumsum(p) - np.cumsum(q))) / len(p))
         return float(np.clip(emd, 0.0, 1.0))
 
     def _calculate_subset_phi(
@@ -790,31 +720,161 @@ class IIT4Analyzer:
         system_state: np.ndarray,
         connectivity_matrix: np.ndarray,
     ) -> float:
-        """Calculate Φ for a subset of elements"""
+        """Calculate bounded Φ for a subset from its strongest internal bipartition."""
+        subset = {int(i) for i in subset}
         if len(subset) <= 1:
             return 0.0
-
-        # Internal connectivity
-        internal_conn = 0.0
-        for i in subset:
-            for j in subset:
-                if i != j:
-                    internal_conn += connectivity_matrix[i, j]
-
-        # Normalize by size
-        n = len(subset)
-        return internal_conn / (n * (n - 1)) if n > 1 else 0.0
+        partitions = list(self._generate_bipartitions(subset))
+        if not partitions:
+            return 0.0
+        return float(
+            max(self._calculate_partition_phi(partition, system_state, connectivity_matrix) for partition in partitions)
+        )
 
     def _mechanism_id(self, mechanism: Mechanism) -> str:
-        """Create unique ID for mechanism"""
+        """Create unique ID for mechanism."""
         elements_str = "-".join(map(str, sorted(mechanism.elements)))
         state_str = "".join(map(str, mechanism.state.astype(int)))
         return f"M[{elements_str}]:{state_str}"
 
     def _kl_divergence(self, p: np.ndarray, q: np.ndarray) -> float:
-        """KL divergence D_KL(P || Q)"""
-        # Avoid log(0)
-        p_safe = np.clip(p, 1e-10, 1)
-        q_safe = np.clip(q, 1e-10, 1)
+        """KL divergence D_KL(P || Q)."""
+        p_safe = np.clip(self._normalise_distribution(p), 1e-10, 1.0)
+        q_safe = np.clip(self._normalise_distribution(q), 1e-10, 1.0)
+        return float(np.sum(p_safe * np.log(p_safe / q_safe)))
 
-        return np.sum(p_safe * np.log(p_safe / q_safe))
+    def _normalise_distribution(self, values: np.ndarray) -> np.ndarray:
+        arr = np.nan_to_num(np.asarray(values, dtype=np.float64), nan=0.0, posinf=0.0, neginf=0.0)
+        arr = np.clip(arr, 0.0, None)
+        if arr.size == 0:
+            return arr
+        total = float(np.sum(arr))
+        if total <= EPSILON:
+            return np.ones(arr.size, dtype=np.float64) / arr.size
+        return arr / total
+
+    @staticmethod
+    def causal_connectivity_from_dependency_edges(
+        modules: Sequence[str],
+        edges: Iterable[Union[Tuple[str, str], Tuple[str, str, float]]],
+        *,
+        bidirectional: bool = False,
+        reverse_import_edges: bool = True,
+    ) -> DependencyGraphConnectivity:
+        """
+        Build a causal matrix from module dependency edges.
+
+        Edges are supplied as ``(importer, imported)`` by default. Runtime
+        constraint flows from imported dependency to importer, so the default
+        orientation writes ``imported -> importer`` into the causal matrix.
+        """
+        module_list = list(dict.fromkeys(str(module) for module in modules))
+        index = {module: i for i, module in enumerate(module_list)}
+        matrix = np.zeros((len(module_list), len(module_list)), dtype=np.float64)
+        weighted_edges: List[Tuple[str, str, float]] = []
+
+        for raw_edge in edges:
+            if len(raw_edge) == 2:
+                source, target = raw_edge  # type: ignore[misc]
+                weight = 1.0
+            else:
+                source, target, weight = raw_edge  # type: ignore[misc]
+            source = str(source)
+            target = str(target)
+            weight = float(max(0.0, weight))
+            if source not in index or target not in index or source == target or weight == 0.0:
+                continue
+
+            causal_source, causal_target = (
+                (target, source) if reverse_import_edges else (source, target)
+            )
+            matrix[index[causal_source], index[causal_target]] += weight
+            weighted_edges.append((causal_source, causal_target, weight))
+            if bidirectional:
+                matrix[index[causal_target], index[causal_source]] += weight
+                weighted_edges.append((causal_target, causal_source, weight))
+
+        max_value = float(np.max(matrix)) if matrix.size else 0.0
+        if max_value > 1.0:
+            matrix = matrix / max_value
+        np.fill_diagonal(matrix, 0.0)
+        return DependencyGraphConnectivity(
+            matrix=np.clip(matrix, 0.0, 1.0),
+            modules=module_list,
+            edges=weighted_edges,
+        )
+
+    @staticmethod
+    def causal_connectivity_from_python_package(
+        root_path: Union[str, Path],
+        *,
+        package_prefix: Optional[str] = None,
+        max_modules: int = 32,
+    ) -> DependencyGraphConnectivity:
+        """
+        Parse Python imports under ``root_path`` and build a bounded causal matrix.
+
+        This gives HYBA a repo-grounded software Φ diagnostic path: module graph
+        → causal matrix → Φ discriminator. It avoids synthetic uniform matrices.
+        """
+        root = Path(root_path)
+        module_to_path: Dict[str, Path] = {}
+        for file_path in sorted(root.rglob("*.py")):
+            if any(part.startswith(".") for part in file_path.relative_to(root).parts):
+                continue
+            module_name = ".".join(file_path.relative_to(root).with_suffix("").parts)
+            if module_name.endswith(".__init__"):
+                module_name = module_name[: -len(".__init__")]
+            if package_prefix:
+                module_name = f"{package_prefix}.{module_name}"
+            module_to_path[module_name] = file_path
+
+        modules = sorted(module_to_path)
+        internal_modules = set(modules)
+        raw_edges: List[Tuple[str, str, float]] = []
+
+        for module_name, file_path in module_to_path.items():
+            try:
+                tree = ast.parse(file_path.read_text(encoding="utf-8"))
+            except (OSError, SyntaxError, UnicodeDecodeError):
+                continue
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        imported = alias.name
+                        matched = IIT4Analyzer._match_internal_module(imported, internal_modules)
+                        if matched:
+                            raw_edges.append((module_name, matched, 1.0))
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module is None:
+                        continue
+                    imported = node.module
+                    if node.level and package_prefix:
+                        imported = f"{package_prefix}.{imported}"
+                    matched = IIT4Analyzer._match_internal_module(imported, internal_modules)
+                    if matched:
+                        raw_edges.append((module_name, matched, 1.0))
+
+        if len(modules) > max_modules:
+            degree: Dict[str, float] = {module: 0.0 for module in modules}
+            for source, target, weight in raw_edges:
+                degree[source] = degree.get(source, 0.0) + weight
+                degree[target] = degree.get(target, 0.0) + weight
+            modules = sorted(modules, key=lambda module: (-degree.get(module, 0.0), module))[:max_modules]
+            allowed = set(modules)
+            raw_edges = [
+                (source, target, weight)
+                for source, target, weight in raw_edges
+                if source in allowed and target in allowed
+            ]
+
+        return IIT4Analyzer.causal_connectivity_from_dependency_edges(
+            modules, raw_edges, reverse_import_edges=True
+        )
+
+    @staticmethod
+    def _match_internal_module(imported: str, internal_modules: Set[str]) -> Optional[str]:
+        if imported in internal_modules:
+            return imported
+        candidates = [module for module in internal_modules if module.startswith(imported + ".")]
+        return sorted(candidates, key=len)[0] if candidates else None
