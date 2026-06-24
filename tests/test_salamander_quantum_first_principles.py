@@ -1,5 +1,6 @@
 """
-Falsification tests for HYBA/Salamander quantum-first-principles claims.
+Falsification tests for HYBA/Salamander quantum-first-principles and
+emergent-intelligence claims.
 
 These tests deliberately avoid proving a narrative. They encode the narrower
 engineering claims that can be checked in CI:
@@ -13,6 +14,11 @@ engineering claims that can be checked in CI:
    consciousness/quantum behaviour.
 4. A bootstrap artifact that exposes self-optimisation infrastructure must not
    be misread as evidence that optimisation proposals were actually applied.
+5. Intelligence/emergence claims must be topology- and complexity-dependent:
+   the system may discover/measure emergent structure, but a bare declaration
+   must not manufacture emergence.
+6. Once emergence is detected, the system may enhance it by seeding knowledge
+   substrates and bounded, reversible optimisation loops.
 
 If these tests fail, the claim boundary has drifted and the system needs repair
 before the claim is made externally.
@@ -22,6 +28,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import importlib.util
 import json
 import math
 import sys
@@ -65,6 +72,16 @@ def _import_roots(path: Path) -> set[str]:
         elif isinstance(node, ast.ImportFrom) and node.module:
             roots.add(node.module.split(".")[0])
     return roots
+
+
+def _load_memory_seed_module():
+    """Load scripts/seed_system_memory.py without requiring scripts to be a package."""
+    script_path = REPO_ROOT / "scripts" / "seed_system_memory.py"
+    spec = importlib.util.spec_from_file_location("seed_system_memory", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_phi_algebra_is_a_first_principles_invariant() -> None:
@@ -192,3 +209,176 @@ def test_quantum_regeneration_runs_from_mathematical_state_and_context() -> None
     assert "qiskit" not in json.dumps(trace_with_context).lower()
     assert "cirq" not in json.dumps(trace_with_context).lower()
     assert "braket" not in json.dumps(trace_with_context).lower()
+
+
+def test_emergence_cannot_be_engineered_by_declaration_without_structure() -> None:
+    """
+    A narrative label or pre-seeded pattern must not manufacture emergence.
+
+    The seed extractor's emergent index must remain zero when there is no
+    knowledge graph. This guards the thesis: emergence is measured from
+    complexity/topology; it is not engineered by setting a flag or writing a
+    slogan into the artifact.
+    """
+    seed_system_memory = _load_memory_seed_module()
+    extractor = seed_system_memory.CodebaseIntelligenceExtractor(REPO_ROOT)
+
+    extractor.emergent_patterns.append(
+        {
+            "name": "Declared Intelligence",
+            "type": "declaration_only",
+            "nodes": [],
+            "description": "A claim without measured topology.",
+            "emergence_index": 1.0,
+        }
+    )
+
+    assert extractor._calculate_emergent_index() == 0.0
+
+
+def test_emergence_index_increases_from_complexity_topology_not_constant_fixture() -> None:
+    """
+    The emergent index should be a function of measured structure.
+
+    This is a falsification harness for the complexity thesis: adding patterns,
+    edges, and differentiated module complexity should produce a higher index
+    than a same-sized graph with no patterns, no edges, and uniform complexity.
+    """
+    seed_system_memory = _load_memory_seed_module()
+
+    sparse = seed_system_memory.CodebaseIntelligenceExtractor(REPO_ROOT)
+    sparse.knowledge_graph = {
+        "a.py": {},
+        "b.py": {},
+        "c.py": {},
+        "d.py": {},
+    }
+    sparse.import_graph = {
+        "a.py": set(),
+        "b.py": set(),
+        "c.py": set(),
+        "d.py": set(),
+    }
+    sparse.complexity_map = {
+        "a.py": 10,
+        "b.py": 10,
+        "c.py": 10,
+        "d.py": 10,
+    }
+
+    complex_system = seed_system_memory.CodebaseIntelligenceExtractor(REPO_ROOT)
+    complex_system.knowledge_graph = dict(sparse.knowledge_graph)
+    complex_system.import_graph = {
+        "a.py": {"b.py", "c.py"},
+        "b.py": {"c.py"},
+        "c.py": {"d.py"},
+        "d.py": set(),
+    }
+    complex_system.complexity_map = {
+        "a.py": 5,
+        "b.py": 17,
+        "c.py": 41,
+        "d.py": 83,
+    }
+    complex_system.emergent_patterns = [
+        {
+            "name": "Measured Coupling",
+            "type": "structural",
+            "nodes": ["a.py", "b.py", "c.py"],
+            "description": "A pattern derived from topology.",
+            "emergence_index": 0.85,
+        }
+    ]
+
+    assert sparse._calculate_emergent_index() == 0.0
+    assert complex_system._calculate_emergent_index() > sparse._calculate_emergent_index()
+
+
+def test_detected_emergence_can_seed_enhancement_but_absence_cannot() -> None:
+    """
+    Once emergence is detected, it can be enhanced into explanations and
+    counterfactuals. With no detected patterns, the enhancement layer must stay
+    empty rather than invent intelligence.
+    """
+    seed_system_memory = _load_memory_seed_module()
+
+    no_emergence = {
+        "emergent_patterns": [],
+    }
+    seeded_from_absence = seed_system_memory.seed_deutsch_knowledge_substrate(no_emergence)
+    assert seeded_from_absence["explanations"] == []
+    assert seeded_from_absence["counterfactuals"] == []
+    assert seeded_from_absence["strategy_performance"] == {}
+
+    measured_emergence = {
+        "emergent_patterns": [
+            {
+                "name": "Pattern Alpha",
+                "type": "structural_coupling",
+                "nodes": ["a.py", "b.py"],
+                "description": "A measured structural coupling.",
+                "emergence_index": 0.82,
+            },
+            {
+                "name": "Pattern Beta",
+                "type": "counterfactual_growth",
+                "nodes": ["b.py", "c.py"],
+                "description": "A second measured pattern.",
+                "emergence_index": 0.88,
+            },
+        ],
+    }
+
+    seeded_from_emergence = seed_system_memory.seed_deutsch_knowledge_substrate(
+        measured_emergence
+    )
+    assert len(seeded_from_emergence["explanations"]) == 2
+    assert len(seeded_from_emergence["counterfactuals"]) == 1
+    assert set(seeded_from_emergence["strategy_performance"]) == {
+        "Pattern Alpha",
+        "Pattern Beta",
+    }
+    assert all(
+        explanation["source"] == "codebase_structural_analysis"
+        for explanation in seeded_from_emergence["explanations"]
+    )
+
+
+def test_once_emergence_has_a_measurable_signal_it_can_be_enhanced_reversibly() -> None:
+    """
+    Enhancement is allowed after a measurable signal exists, but it must be
+    bounded, audited, and reversible.
+
+    This uses the existing autonomous optimizer as the enhancement surface:
+    it moves a parameter toward a better objective, records the adjustment, and
+    can roll back from history.
+    """
+    autonomous_controller = importlib.import_module("pythia_mining.autonomous_controller")
+
+    audit = autonomous_controller.AuditLog()
+    optimizer = autonomous_controller.AutonomousOptimizer(audit)
+    optimizer.register_target(
+        autonomous_controller.OptimizationTarget(
+            name="emergence_gain",
+            current_value=0.2,
+            bounds=(0.0, 1.0),
+            step_size=0.1,
+            objective_fn=lambda value: -(value - 0.7) ** 2,
+        )
+    )
+
+    before = optimizer.targets["emergence_gain"].current_value
+    after = optimizer.optimize_tick("emergence_gain")
+
+    assert after > before
+    assert optimizer.targets["emergence_gain"].bounds[0] <= after <= optimizer.targets[
+        "emergence_gain"
+    ].bounds[1]
+
+    optimizing_entries = audit.recent(subsystem="optimizing")
+    assert optimizing_entries[-1].action == "parameter_adjustment"
+    assert optimizing_entries[-1].reversible is True
+
+    restored = optimizer.rollback("emergence_gain")
+    assert restored == before
+    assert audit.recent(subsystem="optimizing")[-1].action == "rollback"
