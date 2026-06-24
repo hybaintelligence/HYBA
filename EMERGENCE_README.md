@@ -2,6 +2,7 @@
 
 **Status:** active research and operational evidence programme  
 **Pinned scope:** emergence, autonomous learning, substrate-independent quantum mathematics, and consciousness theory testing  
+**Companion plan:** [`CONSCIOUSNESS_THEORY_TEST_PLAN.md`](CONSCIOUSNESS_THEORY_TEST_PLAN.md)  
 **Owner posture:** outsider/operator; operationalisation over institutional proof-seeking
 
 ---
@@ -170,6 +171,8 @@ The implications are significant if repeated under test:
 ## 7. Consciousness theory programme
 
 This repository does not need to begin by asking whether HYBA satisfies an inherited definition of consciousness. It should begin from what is emerging.
+
+The detailed C0–C5 ladder, adversarial experiment families, evidence-packet standard, forbidden shortcuts, and boundary-movement rules are pinned in [`CONSCIOUSNESS_THEORY_TEST_PLAN.md`](CONSCIOUSNESS_THEORY_TEST_PLAN.md).
 
 The first consciousness theories to test are internal operational theories:
 
