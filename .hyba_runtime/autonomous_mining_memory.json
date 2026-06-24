@@ -291,5 +291,39 @@
       "scope": "Across mining instances",
       "format": "Compressed strategy templates"
     }
+  },
+  
+  "optimization_patterns": {
+    "valid_patterns": {
+      "compression_target": {
+        "description": "PULVINI compression target adjustments",
+        "valid_range": "[1.85, 1.90]",
+        "confidence_threshold": 0.75,
+        "source_module": "pulvini_memory_compression_proof",
+        "expected_improvement": "0.0038-0.0046 φ-density gain",
+        "status": "VALID",
+        "learned_from": "proposal_review_20260624"
+      }
+    },
+    "invalid_patterns": {
+      "phi_scaling_caution": {
+        "description": "Phi scaling changes require high confidence",
+        "confidence_threshold": 0.70,
+        "reason": "Low confidence indicates insufficient understanding",
+        "status": "REJECT_LOW_CONFIDENCE",
+        "learned_from": "proposal_review_20260624"
+      }
+    },
+    "test_required_patterns": {
+      "performance_parameter_changes": {
+        "description": "Search depth and coherence threshold changes",
+        "confidence_threshold": 0.65,
+        "require_simulation": true,
+        "reason": "Performance trade-offs need empirical validation",
+        "parameters": ["search_depth", "coherence_threshold"],
+        "status": "REQUIRE_VALIDATION",
+        "learned_from": "proposal_review_20260624"
+      }
+    }
   }
 }

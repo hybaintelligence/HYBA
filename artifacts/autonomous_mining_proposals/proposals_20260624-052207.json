@@ -1,0 +1,275 @@
+{
+  "generated_at": "2026-06-24T05:22:07.052295",
+  "autonomy_level": "unbounded",
+  "num_cycles": 3,
+  "target_hashrate_ehs": 150.0,
+  "total_proposals": 14,
+  "proposals": [
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "phi_scaling",
+      "current_value": 1.5,
+      "proposed_value": 1.4249999999999998,
+      "expected_phi_density_gain": 0.009924935625000075,
+      "logical_consistency_score": 0.76,
+      "confidence": 0.3,
+      "codebase_source": "phi_scaling_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "compression_target",
+      "current_value": 1.86,
+      "proposed_value": 1.8786,
+      "expected_phi_density_gain": 0.004045183124999907,
+      "logical_consistency_score": 0.8,
+      "confidence": 0.7999999999999999,
+      "codebase_source": "pulvini_memory_compression_proof",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "search_depth",
+      "current_value": 60.0,
+      "proposed_value": 54.0,
+      "expected_phi_density_gain": 0.014002390624999972,
+      "logical_consistency_score": 0.75,
+      "confidence": 0.6,
+      "codebase_source": "ai_optimizer",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "coherence_threshold",
+      "current_value": 0.7,
+      "proposed_value": 0.735,
+      "expected_phi_density_gain": 0.010693175,
+      "logical_consistency_score": 0.7,
+      "confidence": 0.6,
+      "codebase_source": "consciousness_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "compression_target",
+      "current_value": 1.86,
+      "proposed_value": 1.8786,
+      "expected_phi_density_gain": 0.004045183124999907,
+      "logical_consistency_score": 0.8,
+      "confidence": 0.7999999999999999,
+      "codebase_source": "pulvini_memory_compression_proof",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "search_depth",
+      "current_value": 60.0,
+      "proposed_value": 54.0,
+      "expected_phi_density_gain": 0.014002390624999972,
+      "logical_consistency_score": 0.75,
+      "confidence": 0.6,
+      "codebase_source": "ai_optimizer",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "coherence_threshold",
+      "current_value": 0.7,
+      "proposed_value": 0.735,
+      "expected_phi_density_gain": 0.010693175,
+      "logical_consistency_score": 0.7,
+      "confidence": 0.6,
+      "codebase_source": "consciousness_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_4_1782274927",
+      "improvement_type": "phi_scaling",
+      "current_value": 1.5,
+      "proposed_value": 1.4249999999999998,
+      "expected_phi_density_gain": 0.010042123124999969,
+      "logical_consistency_score": 0.76,
+      "confidence": 0.3,
+      "codebase_source": "phi_scaling_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_4_1782274927",
+      "improvement_type": "compression_target",
+      "current_value": 1.86,
+      "proposed_value": 1.8972000000000002,
+      "expected_phi_density_gain": 0.004255595625000108,
+      "logical_consistency_score": 0.8,
+      "confidence": 0.8999999999999999,
+      "codebase_source": "pulvini_memory_compression_proof",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_0_1782274927",
+      "improvement_type": "coherence_threshold",
+      "current_value": 0.7,
+      "proposed_value": 0.735,
+      "expected_phi_density_gain": 0.010693175,
+      "logical_consistency_score": 0.7,
+      "confidence": 0.6,
+      "codebase_source": "consciousness_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_4_1782274927",
+      "improvement_type": "phi_scaling",
+      "current_value": 1.5,
+      "proposed_value": 1.4249999999999998,
+      "expected_phi_density_gain": 0.010042123124999969,
+      "logical_consistency_score": 0.76,
+      "confidence": 0.3,
+      "codebase_source": "phi_scaling_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_4_1782274927",
+      "improvement_type": "compression_target",
+      "current_value": 1.86,
+      "proposed_value": 1.8972000000000002,
+      "expected_phi_density_gain": 0.004255595625000108,
+      "logical_consistency_score": 0.8,
+      "confidence": 0.8999999999999999,
+      "codebase_source": "pulvini_memory_compression_proof",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_6_1782274927",
+      "improvement_type": "compression_target",
+      "current_value": 1.86,
+      "proposed_value": 1.89685404,
+      "expected_phi_density_gain": 0.0040150987886976575,
+      "logical_consistency_score": 0.8,
+      "confidence": 0.8981399999999999,
+      "codebase_source": "pulvini_memory_compression_proof",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    },
+    {
+      "proposal_id": "self_opt_6_1782274927",
+      "improvement_type": "phi_scaling",
+      "current_value": 1.5,
+      "proposed_value": 1.4249999999999998,
+      "expected_phi_density_gain": 0.009807748125000071,
+      "logical_consistency_score": 0.76,
+      "confidence": 0.3,
+      "codebase_source": "phi_scaling_engine",
+      "constraints_satisfied": [
+        "hermiticity",
+        "positive_semidefinite",
+        "natural_scaling",
+        "energy_conservation",
+        "information_integrity"
+      ],
+      "constraints_violated": [],
+      "applied": true
+    }
+  ]
+}

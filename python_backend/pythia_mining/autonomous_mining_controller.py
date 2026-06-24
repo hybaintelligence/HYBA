@@ -593,17 +593,53 @@ class AutonomousMiningController:
     
     def _load_mining_memory(self) -> dict:
         """Load autonomous mining memory from runtime directory."""
-        memory_path = Path(__file__).parent.parent.parent.parent / ".hyba_runtime" / "autonomous_mining_memory.json"
+        memory_path = Path(__file__).parent.parent.parent / ".hyba_runtime" / "autonomous_mining_memory.json"
+        
+        print(f"🔍 Looking for mining memory at: {memory_path}")
+        print(f"   File exists: {memory_path.exists()}")
         
         if memory_path.exists():
             try:
                 with open(memory_path) as f:
-                    return json.load(f)
+                    memory = json.load(f)
+                print(f"✅ Mining memory loaded successfully")
+                print(f"   Optimization patterns: {list(memory.get('optimization_patterns', {}).keys())}")
+                return memory
             except Exception as e:
                 print(f"⚠️  Failed to load mining memory: {e}")
         
         # Return empty memory if file not found or invalid
+        print(f"⚠️  Returning empty mining memory")
         return {}
+    
+    def _should_filter_proposal(self, proposal: "SelfOptimizationProposal") -> tuple[bool, str]:
+        """Filter proposals based on mining memory optimization patterns.
+        
+        Returns (should_filter, reason) tuple.
+        """
+        if not self.mining_memory:
+            return False, ""
+        
+        patterns = self.mining_memory.get("optimization_patterns", {})
+        valid_patterns = patterns.get("valid_patterns", {})
+        invalid_patterns = patterns.get("invalid_patterns", {})
+        test_required_patterns = patterns.get("test_required_patterns", {})
+        
+        # Check invalid patterns (reject)
+        for pattern_name, pattern_data in invalid_patterns.items():
+            if proposal.improvement_type in pattern_data.get("parameters", [proposal.improvement_type]):
+                confidence_threshold = pattern_data.get("confidence_threshold", 0.0)
+                if proposal.counterfactual_confidence < confidence_threshold:
+                    return True, f"Rejected by invalid pattern '{pattern_name}': confidence {proposal.counterfactual_confidence:.2f} < threshold {confidence_threshold}"
+        
+        # Check test-required patterns (flag for validation)
+        for pattern_name, pattern_data in test_required_patterns.items():
+            if proposal.improvement_type in pattern_data.get("parameters", [proposal.improvement_type]):
+                confidence_threshold = pattern_data.get("confidence_threshold", 0.0)
+                if proposal.counterfactual_confidence < confidence_threshold:
+                    return True, f"Flagged by test-required pattern '{pattern_name}': requires validation before application"
+        
+        return False, ""
 
     # ----------------------------------------------------------------
     # BOOT-TIME STALE LOCK RECOVERY
@@ -2000,6 +2036,13 @@ class AutonomousMiningController:
 
             for target in targets_to_try[: self.config.max_proposals_per_cycle]:
                 proposal = self._generate_counterfactual(target)
+                
+                # Filter proposal based on mining memory patterns
+                should_filter, filter_reason = self._should_filter_proposal(proposal)
+                if should_filter:
+                    print(f"🔒 Filtering proposal: {filter_reason}")
+                    continue
+                
                 proposals.append(proposal)
                 self.proposal_history.append(proposal)
             self.reflexive_cycle_guard.record_phase_end(
