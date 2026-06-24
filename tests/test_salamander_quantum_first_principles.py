@@ -1,13 +1,14 @@
 """
 Falsification tests for HYBA/Salamander quantum-first-principles claims.
 
-These tests deliberately avoid proving a narrative. They encode the narrow
-claims that can be checked in CI:
+These tests deliberately avoid proving a narrative. They encode the narrower
+engineering claims that can be checked in CI:
 
-1. The quantum substrate can be expressed as mathematics rather than as a
-   hardware/vendor dependency.
-2. Hardware acceleration remains optional evidence, not the source of the
-   quantum claim.
+1. The quantum substrate can be expressed from first-principles mathematics
+   rather than from an external quantum-SDK dependency.
+2. CPU/GPU/Metal/CUDA-style execution backends are legitimate computational
+   substrates. They are not synonymous with quantum, and they must be tested as
+   execution/evidence surfaces rather than forbidden as claim sources.
 3. Memory seeding is treated as a structural prior, not as smuggled proof of
    consciousness/quantum behaviour.
 4. A bootstrap artifact that exposes self-optimisation infrastructure must not
@@ -45,14 +46,12 @@ PURE_MATH_SUBSTRATE_MODULES = [
     REPO_ROOT / "python_backend" / "pythia_mining" / "quantum_regeneration.py",
 ]
 
-FORBIDDEN_VENDOR_IMPORT_ROOTS = {
-    "mlx",
-    "metal",
+# These are quantum SDK/framework dependencies. They are different from CPU,
+# GPU, Metal, CUDA, MLX, NumPy, or other legitimate execution substrates.
+FORBIDDEN_REQUIRED_QUANTUM_SDK_IMPORT_ROOTS = {
     "qiskit",
     "cirq",
     "braket",
-    "cuda",
-    "cupy",
 }
 
 
@@ -77,19 +76,33 @@ def test_phi_algebra_is_a_first_principles_invariant() -> None:
 
 
 @pytest.mark.parametrize("module_path", PURE_MATH_SUBSTRATE_MODULES)
-def test_quantum_substrate_core_has_no_required_hardware_vendor_imports(module_path: Path) -> None:
-    """Core substrate modules must not depend on vendor quantum/GPU stacks."""
+def test_quantum_substrate_core_has_no_required_quantum_sdk_imports(module_path: Path) -> None:
+    """Core substrate modules must not require external quantum SDK frameworks."""
     assert module_path.exists(), f"Missing expected substrate module: {module_path}"
     imported_roots = _import_roots(module_path)
-    forbidden = imported_roots & FORBIDDEN_VENDOR_IMPORT_ROOTS
+    forbidden = imported_roots & FORBIDDEN_REQUIRED_QUANTUM_SDK_IMPORT_ROOTS
     assert forbidden == set(), (
-        f"{module_path.relative_to(REPO_ROOT)} imports vendor/hardware roots {sorted(forbidden)}. "
-        "That would violate the substrate-agnostic claim boundary."
+        f"{module_path.relative_to(REPO_ROOT)} imports quantum SDK roots {sorted(forbidden)}. "
+        "That would make the first-principles substrate depend on an external quantum framework."
     )
 
 
-def test_hardware_probe_is_optional_evidence_not_the_quantum_source(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Forcing a non-Apple host must degrade cleanly instead of fabricating hardware proof."""
+def test_computational_hardware_paths_are_first_class_execution_surfaces() -> None:
+    """CPU/GPU/Metal/MLX are computation surfaces and must be tested, not forbidden."""
+    hardware_gate = REPO_ROOT / "tests" / "test_apple_silicon_metal_gate.py"
+    assert hardware_gate.exists(), "Expected Apple Silicon/MLX/Metal evidence tests to exist"
+
+    source = hardware_gate.read_text(encoding="utf-8")
+    assert "test_probe_verifies_fake_mlx_gpu_cpu_paths" in source
+    assert "cpu_fallback_verified" in source
+    assert "metal_path_verified" in source
+    assert "absolute_delta" in source
+
+
+def test_hardware_probe_degrades_cleanly_when_requested_backend_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Missing hardware should degrade honestly, not fabricate acceleration evidence."""
     apple_silicon_metal = importlib.import_module("pythia_mining.apple_silicon_metal")
 
     monkeypatch.setattr(apple_silicon_metal.platform, "system", lambda: "Linux")
@@ -152,8 +165,8 @@ def test_bootstrap_artifact_separates_self_optimisation_surface_from_applied_opt
         assert acceptance_rate == 0.0
 
 
-def test_quantum_regeneration_is_contextual_math_not_hardware_execution() -> None:
-    """The regeneration pipeline should run from state/context maths without hardware."""
+def test_quantum_regeneration_runs_from_mathematical_state_and_context() -> None:
+    """Regeneration should be driven by formal state/context, not by quantum-SDK calls."""
     quantum_regeneration = importlib.import_module("pythia_mining.quantum_regeneration")
 
     trace_without_context = quantum_regeneration.regeneration_pipeline(
@@ -176,4 +189,6 @@ def test_quantum_regeneration_is_contextual_math_not_hardware_execution() -> Non
 
     assert trace_with_context["module_id"] == "substrate_probe"
     assert trace_with_context["status"] != "innervation_failure"
-    assert "hardware" not in json.dumps(trace_with_context).lower()
+    assert "qiskit" not in json.dumps(trace_with_context).lower()
+    assert "cirq" not in json.dumps(trace_with_context).lower()
+    assert "braket" not in json.dumps(trace_with_context).lower()
