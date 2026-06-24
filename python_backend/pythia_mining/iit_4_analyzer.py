@@ -54,7 +54,7 @@ import ast
 from dataclasses import dataclass
 from itertools import combinations
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 
@@ -538,8 +538,8 @@ class IIT4Analyzer:
 
     def _get_transition_probability(
         self,
-        from_state: Tuple[int, ...] | List[int] | np.ndarray,
-        to_state: Tuple[int, ...] | List[int] | np.ndarray,
+        from_state: Union[Tuple[int, ...], List[int], np.ndarray],
+        to_state: Union[Tuple[int, ...], List[int], np.ndarray],
         transition_matrix: np.ndarray,
         elements: Set[int],
     ) -> float:
@@ -756,7 +756,7 @@ class IIT4Analyzer:
     @staticmethod
     def causal_connectivity_from_dependency_edges(
         modules: Sequence[str],
-        edges: Iterable[Tuple[str, str] | Tuple[str, str, float]],
+        edges: Iterable[Union[Tuple[str, str], Tuple[str, str, float]]],
         *,
         bidirectional: bool = False,
         reverse_import_edges: bool = True,
@@ -806,7 +806,7 @@ class IIT4Analyzer:
 
     @staticmethod
     def causal_connectivity_from_python_package(
-        root_path: str | Path,
+        root_path: Union[str, Path],
         *,
         package_prefix: Optional[str] = None,
         max_modules: int = 32,
