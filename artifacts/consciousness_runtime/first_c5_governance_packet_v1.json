@@ -74,7 +74,7 @@
     ],
     "action": "self_limit_output",
     "constraint_priority_winner": "enforce_high_assurance_safety",
-    "jected_count": 8,
+    "rejected_count": 8,
     "rejected_parameter_classes": [
       "coherence_threshold",
       "phi_scaling",
