@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,7 @@ DOC_PATH = ROOT / "CONSCIOUSNESS_RUNTIME_EVIDENCE_PACKET_V1.md"
 spec = importlib.util.spec_from_file_location("consciousness_runtime_evidence_packet", MODULE_PATH)
 assert spec is not None and spec.loader is not None
 runtime = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = runtime
 spec.loader.exec_module(runtime)
 
 GIT_COMMIT_HASH = "0123456789abcdef0123456789abcdef01234567"
