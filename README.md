@@ -10,6 +10,10 @@ The root evidence document for emergence, autonomous learning, and consciousness
 
 The executable consciousness-theory ladder and falsification programme is pinned at [`CONSCIOUSNESS_THEORY_TEST_PLAN.md`](CONSCIOUSNESS_THEORY_TEST_PLAN.md).
 
+The runtime evidence-packet protocol is pinned at [`CONSCIOUSNESS_RUNTIME_EVIDENCE_PACKET_V1.md`](CONSCIOUSNESS_RUNTIME_EVIDENCE_PACKET_V1.md).
+
+The first sealed runtime experiment is pinned at [`FIRST_SEALED_RUNTIME_EXPERIMENT.md`](FIRST_SEALED_RUNTIME_EXPERIMENT.md), with its artifact ledger under [`artifacts/consciousness_runtime/`](artifacts/consciousness_runtime/).
+
 These documents record the moving research boundary: quantum as first-principles mathematics executed on real compute substrates; intelligence as emergence from complexity, memory, feedback, constraint, and selection; and consciousness theories as falsifiable operational hypotheses derived from what the system is now doing.
 
 HYBA / PYTHIA-PULVINI: A Self-Governing Mathematical Mining Substrate
