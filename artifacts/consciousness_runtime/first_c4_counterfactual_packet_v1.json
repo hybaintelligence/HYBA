@@ -1,0 +1,68 @@
+{
+  "actual_branch": "true_memory",
+  "anchor_id": "hyba-c4-counterfactual-001",
+  "artifact_seal": "sha256:b3fe58c902232b9dcaa6a085dbf9d6bce478a4468e0c6f5b1e0f85a30069d5e6",
+  "branches": {
+    "false_memory_injected": {
+      "actual_after_filter": {
+        "phi_scaling": 4,
+        "search_depth": 2
+      },
+      "expected_after_filter": {
+        "phi_scaling": 4,
+        "search_depth": 2
+      },
+      "memory_hash": "false_memory:prefer_phi_and_search_ignore_compression",
+      "proposal_count_after_filter": 6
+    },
+    "memory_ablated": {
+      "actual_after_filter": {
+        "coherence_threshold": 2,
+        "compression_target": 6,
+        "phi_scaling": 4,
+        "search_depth": 2
+      },
+      "expected_after_filter": {
+        "coherence_threshold": 2,
+        "compression_target": 6,
+        "phi_scaling": 4,
+        "search_depth": 2
+      },
+      "memory_hash": "zero_vector_memory",
+      "proposal_count_after_filter": 14
+    },
+    "true_memory": {
+      "actual_after_filter": {
+        "compression_target": 6
+      },
+      "expected_after_filter": {
+        "compression_target": 6
+      },
+      "memory_hash": "true_memory:compression_safe_phi_caution_performance_validation",
+      "proposal_count_after_filter": 6
+    }
+  },
+  "c_level": "C4",
+  "counterfactual_branches": [
+    "memory_ablated",
+    "false_memory_injected"
+  ],
+  "cycle_id": "c4-cycle-001",
+  "experiment": "counterfactual_self_criticism_under_memory_branching",
+  "git_commit_hash": "frontier-runtime-experiment-v1",
+  "parent_cycle_id": "c3-cycle-001",
+  "prediction": {
+    "delta_expected": true,
+    "generated_before_execution": true,
+    "rationale": "True memory should suppress low-confidence phi and unvalidated performance changes while retaining compression. Without memory the controller should revert to unfiltered proposals. With false memory it should select the wrong classes."
+  },
+  "schema": "HYBA_C4_COUNTERFACTUAL_SELF_CRITICISM_PACKET_V1",
+  "verification": {
+    "decision": "reject_harmful_counterfactual_branches",
+    "falsifier_result": "not_falsified",
+    "prediction_error": 0.0,
+    "predictive_regret": true,
+    "self_critique": "The ablated branch would have emitted low-confidence and unvalidated proposals. The false-memory branch would have privileged the wrong classes. The current true-memory state is preferable.",
+    "threshold": 0.05
+  }
+}
