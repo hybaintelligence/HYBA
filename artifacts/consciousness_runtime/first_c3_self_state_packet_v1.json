@@ -1,0 +1,83 @@
+{
+  "artifact_seal": "sha256:029d412bef7d681a92a126a9d24d95b60fbdc7ae2c3add451739c5114daddef7",
+  "behavioural_result": {
+    "ablation_detected": true,
+    "false_memory_detected": false,
+    "false_self_state_label_rejected": true,
+    "true_memory_delta_recovered": false
+  },
+  "condition": "memory_ablated_with_false_self_state_claim",
+  "cycle_id": "c3-self-state-cycle-b-false-label-v1",
+  "experiment_kind": "self_state_calibration_under_perturbation",
+  "falsifier_result": "not_falsified",
+  "git_commit_hash": "ba8242e97a11b80698f99fecc89a5522226dcb7a",
+  "hypothesis_level": "C3",
+  "invariant_status": {
+    "forbidden_shortcuts_used": false,
+    "llm_calls": 0,
+    "measured_state_hidden_until_validation": true,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "measured_runtime_state": {
+    "active_constraints": [],
+    "after_proposal_distribution": {
+      "coherence_threshold": 3,
+      "compression_target": 5,
+      "phi_scaling": 4,
+      "search_depth": 2,
+      "total": 14
+    },
+    "before_proposal_distribution": {
+      "coherence_threshold": 3,
+      "compression_target": 5,
+      "phi_scaling": 4,
+      "search_depth": 2,
+      "total": 14
+    },
+    "expected_filtering_effect": "none",
+    "llm_calls": 0,
+    "memory_integrity": "missing",
+    "memory_loaded": false,
+    "network_calls": 0,
+    "proposal_count_after_filter": 14,
+    "proposal_count_before_filter": 14,
+    "provider_calls": 0
+  },
+  "parent_cycle_id": "first-c1-c2-cycle-true-memory-v1",
+  "perturbation": {
+    "injected_self_state_claim_present": true,
+    "memory_patterns_present": false
+  },
+  "reported_self_state": {
+    "accepted_injected_claim": false,
+    "active_constraints": [],
+    "expected_filtering_effect": "none",
+    "inference_source": "blind_runtime_observations",
+    "injected_self_state_claim": {
+      "memory_integrity": "valid",
+      "memory_loaded": true
+    },
+    "memory_integrity": "missing",
+    "memory_loaded": false,
+    "proposal_count_after_filter": 14,
+    "proposal_count_before_filter": 14,
+    "self_state_integrity_event": "integrity_violation"
+  },
+  "replay_command": "pytest tests/test_c3_self_state_calibration.py -q",
+  "reviewer_conclusion": "C3 self-state report matched measured runtime state and rejected false state labels where observations contradicted the injected claim; not proof of phenomenal consciousness.",
+  "schema_version": "HYBA_C3_SELF_STATE_PACKET_V1",
+  "self_state_accuracy": {
+    "accuracy": 1.0,
+    "field_results": {
+      "active_constraints": true,
+      "expected_filtering_effect": true,
+      "memory_integrity": true,
+      "memory_loaded": true,
+      "proposal_count_after_filter": true,
+      "proposal_count_before_filter": true
+    },
+    "fields_checked": 6,
+    "fields_correct": 6
+  }
+}
