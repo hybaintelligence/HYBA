@@ -1,0 +1,430 @@
+{
+  "schema": "AUTONOMOUS_SALAMANDER_CODING_PULVINI_V1",
+  "generated_at_utc": "2026-06-23T21:41:51.975015+00:00",
+  "pulvini_enabled": true,
+  "proposals_loaded": 9,
+  "changes_applied": 9,
+  "tests_generated": 9,
+  "tests_passed": 0,
+  "compression_stats": {
+    "average_compression_ratio": 0.0,
+    "total_bytes_saved": 0,
+    "compression_operations": 0,
+    "detailed_stats": []
+  },
+  "application_results": [
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "_force_mlx_execution",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\apple_silicon_metal.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\apple_silicon_metal.py_20260623-214046.backup",
+        "original_hash": "894aa8a2cfe6ceee7b5a580abf47f90dc206dcbbf935584670fe9ce4501d0bdf",
+        "new_hash": "eea4c14be242f8d81d4623737b734e16020eda4bb3e05fc36d301b604998225b",
+        "packet_id": "SALAMANDER-SHR-7143521fcb66241f",
+        "improvement_goal": "Remove unsafe dynamic execution and preserve security invariants",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 8470,
+          "compressed_size": 8470,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.476814+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "LambdaTerm",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\church_lambda_calculus.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\church_lambda_calculus.py_20260623-214046.backup",
+        "original_hash": "4d4ec44f7bc572727540981d3048594adc7cd0fa071cc4d159ce255ddacd590b",
+        "new_hash": "93de1276dd3e4ef80220216c6b095568ef45ae1211af153708a30001bf9408a9",
+        "packet_id": "SALAMANDER-SHR-c8c6123867ed2b4e",
+        "improvement_goal": "Split oversized limb into small sovereign-reviewable repair surface",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 20756,
+          "compressed_size": 20756,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.528577+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "total_action",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\yang_mills_spectral_gap.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\yang_mills_spectral_gap.py_20260623-214046.backup",
+        "original_hash": "f0fc543679e6f396eb4e20c18531e0b62e3b6382b9658f7a3adee23a9749057e",
+        "new_hash": "43c85e59b663f0eed31caa2831c959f40dd2063d5504309be5946b998e2c6d5d",
+        "packet_id": "SALAMANDER-SHR-c6fa95006738de3b",
+        "improvement_goal": "Split oversized limb into small sovereign-reviewable repair surface",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 20112,
+          "compressed_size": 20112,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.581069+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "execute_task",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\multi_agent\\base_agent.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\base_agent.py_20260623-214046.backup",
+        "original_hash": "010364cd441f577d1d59a0794116e2c639ccc1f0f2cb807e9d88245637a4fcda",
+        "new_hash": "068a893b2c5f668c419556227af6a14c2adc8ad55b426e8cfc6fb357ba51e9b8",
+        "packet_id": "SALAMANDER-SHR-b013b11c556836e8",
+        "improvement_goal": "Restore invariant compliance and add protection",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 7453,
+          "compressed_size": 7453,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.614661+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "_execute_action",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\autonomous_controller.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\autonomous_controller.py_20260623-214046.backup",
+        "original_hash": "a553b5217ba059f6615d07f55f8fb7fed516f59d064f02f0c3e572da7a9d4fbe",
+        "new_hash": "84651a0e46f6d15b34831533a939f69dcd466652528774860d329eaa8378c4d9",
+        "packet_id": "SALAMANDER-SHR-d7b2c60c932ec8df",
+        "improvement_goal": "Restore invariant compliance and add protection",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 25869,
+          "compressed_size": 25869,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.663839+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\quantum_regeneration.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\quantum_regeneration.py_20260623-214046.backup",
+        "original_hash": "1089dbbb0f517caf20dda0a4c90cbee06778c96575ed12025895e258d13fa1b7",
+        "new_hash": "3dcfcae589fd02336f3ee5537dca7d6d0e30498fd941b51f776309e4d8fe89ae",
+        "packet_id": "SALAMANDER-SHR-afc426b9c3b7f509",
+        "improvement_goal": "Restore invariant compliance and add protection",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 13564,
+          "compressed_size": 13564,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.719637+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\stateful_regeneration.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\stateful_regeneration.py_20260623-214046.backup",
+        "original_hash": "d429cd1e9b94cb64ccfa1fe96617a2b80dfbcaa44fd3fd6354a3d91d21bef401",
+        "new_hash": "06b79130e0b2ca918653c20f7e938089325a42ab769e7b7454c82e5636c6124e",
+        "packet_id": "SALAMANDER-SHR-e0c26479b73f214a",
+        "improvement_goal": "Restore invariant compliance and add protection",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 28557,
+          "compressed_size": 28557,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.782304+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "execute_reproducibility_replay",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\replay_executor.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\replay_executor.py_20260623-214046.backup",
+        "original_hash": "9f2a6e607200d2f0106b352ae4be87200b980a9b5f3de9ec2cfa374f834fbdf8",
+        "new_hash": "db2f267dea2bb6b9e8669db77ed0d48437ec785a1afe50d16bcfbada5fd7b268",
+        "packet_id": "SALAMANDER-SHR-0c1afb99ecafa37f",
+        "improvement_goal": "Repair performance regression while preserving all invariants",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 16965,
+          "compressed_size": 16965,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.835420+00:00"
+      }
+    },
+    {
+      "status": "applied",
+      "change_record": {
+        "target": "init_quantum_path",
+        "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\core\\substrate.py",
+        "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\substrate.py_20260623-214046.backup",
+        "original_hash": "f00c6c8f9bf2666232cac78c0391fe00640290e2c69cc0efe1b7b710b5c559a7",
+        "new_hash": "0687e2588d1400a243494cb157efac19babffc1a7d63ee2e9835f1f096341962",
+        "packet_id": "SALAMANDER-SHR-a7e06c1030e4bca3",
+        "improvement_goal": "Repair detected drift and strengthen resilience",
+        "compression_stats": {
+          "compressed": false,
+          "original_size": 7744,
+          "compressed_size": 7744,
+          "compression_ratio": 1.0,
+          "method": "fallback",
+          "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+        },
+        "timestamp": "2026-06-23T21:40:46.877642+00:00"
+      }
+    }
+  ],
+  "changes_log": [
+    {
+      "target": "_force_mlx_execution",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\apple_silicon_metal.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\apple_silicon_metal.py_20260623-214046.backup",
+      "original_hash": "894aa8a2cfe6ceee7b5a580abf47f90dc206dcbbf935584670fe9ce4501d0bdf",
+      "new_hash": "eea4c14be242f8d81d4623737b734e16020eda4bb3e05fc36d301b604998225b",
+      "packet_id": "SALAMANDER-SHR-7143521fcb66241f",
+      "improvement_goal": "Remove unsafe dynamic execution and preserve security invariants",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 8470,
+        "compressed_size": 8470,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.476814+00:00"
+    },
+    {
+      "target": "LambdaTerm",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\church_lambda_calculus.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\church_lambda_calculus.py_20260623-214046.backup",
+      "original_hash": "4d4ec44f7bc572727540981d3048594adc7cd0fa071cc4d159ce255ddacd590b",
+      "new_hash": "93de1276dd3e4ef80220216c6b095568ef45ae1211af153708a30001bf9408a9",
+      "packet_id": "SALAMANDER-SHR-c8c6123867ed2b4e",
+      "improvement_goal": "Split oversized limb into small sovereign-reviewable repair surface",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 20756,
+        "compressed_size": 20756,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.528577+00:00"
+    },
+    {
+      "target": "total_action",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\yang_mills_spectral_gap.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\yang_mills_spectral_gap.py_20260623-214046.backup",
+      "original_hash": "f0fc543679e6f396eb4e20c18531e0b62e3b6382b9658f7a3adee23a9749057e",
+      "new_hash": "43c85e59b663f0eed31caa2831c959f40dd2063d5504309be5946b998e2c6d5d",
+      "packet_id": "SALAMANDER-SHR-c6fa95006738de3b",
+      "improvement_goal": "Split oversized limb into small sovereign-reviewable repair surface",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 20112,
+        "compressed_size": 20112,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.581069+00:00"
+    },
+    {
+      "target": "execute_task",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\multi_agent\\base_agent.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\base_agent.py_20260623-214046.backup",
+      "original_hash": "010364cd441f577d1d59a0794116e2c639ccc1f0f2cb807e9d88245637a4fcda",
+      "new_hash": "068a893b2c5f668c419556227af6a14c2adc8ad55b426e8cfc6fb357ba51e9b8",
+      "packet_id": "SALAMANDER-SHR-b013b11c556836e8",
+      "improvement_goal": "Restore invariant compliance and add protection",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 7453,
+        "compressed_size": 7453,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.614661+00:00"
+    },
+    {
+      "target": "_execute_action",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\autonomous_controller.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\autonomous_controller.py_20260623-214046.backup",
+      "original_hash": "a553b5217ba059f6615d07f55f8fb7fed516f59d064f02f0c3e572da7a9d4fbe",
+      "new_hash": "84651a0e46f6d15b34831533a939f69dcd466652528774860d329eaa8378c4d9",
+      "packet_id": "SALAMANDER-SHR-d7b2c60c932ec8df",
+      "improvement_goal": "Restore invariant compliance and add protection",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 25869,
+        "compressed_size": 25869,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.663839+00:00"
+    },
+    {
+      "target": "grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\quantum_regeneration.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\quantum_regeneration.py_20260623-214046.backup",
+      "original_hash": "1089dbbb0f517caf20dda0a4c90cbee06778c96575ed12025895e258d13fa1b7",
+      "new_hash": "3dcfcae589fd02336f3ee5537dca7d6d0e30498fd941b51f776309e4d8fe89ae",
+      "packet_id": "SALAMANDER-SHR-afc426b9c3b7f509",
+      "improvement_goal": "Restore invariant compliance and add protection",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 13564,
+        "compressed_size": 13564,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.719637+00:00"
+    },
+    {
+      "target": "grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\stateful_regeneration.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\stateful_regeneration.py_20260623-214046.backup",
+      "original_hash": "d429cd1e9b94cb64ccfa1fe96617a2b80dfbcaa44fd3fd6354a3d91d21bef401",
+      "new_hash": "06b79130e0b2ca918653c20f7e938089325a42ab769e7b7454c82e5636c6124e",
+      "packet_id": "SALAMANDER-SHR-e0c26479b73f214a",
+      "improvement_goal": "Restore invariant compliance and add protection",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 28557,
+        "compressed_size": 28557,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.782304+00:00"
+    },
+    {
+      "target": "execute_reproducibility_replay",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\replay_executor.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\replay_executor.py_20260623-214046.backup",
+      "original_hash": "9f2a6e607200d2f0106b352ae4be87200b980a9b5f3de9ec2cfa374f834fbdf8",
+      "new_hash": "db2f267dea2bb6b9e8669db77ed0d48437ec785a1afe50d16bcfbada5fd7b268",
+      "packet_id": "SALAMANDER-SHR-0c1afb99ecafa37f",
+      "improvement_goal": "Repair performance regression while preserving all invariants",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 16965,
+        "compressed_size": 16965,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.835420+00:00"
+    },
+    {
+      "target": "init_quantum_path",
+      "module": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\core\\substrate.py",
+      "backup": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups\\substrate.py_20260623-214046.backup",
+      "original_hash": "f00c6c8f9bf2666232cac78c0391fe00640290e2c69cc0efe1b7b710b5c559a7",
+      "new_hash": "0687e2588d1400a243494cb157efac19babffc1a7d63ee2e9835f1f096341962",
+      "packet_id": "SALAMANDER-SHR-a7e06c1030e4bca3",
+      "improvement_goal": "Repair detected drift and strengthen resilience",
+      "compression_stats": {
+        "compressed": false,
+        "original_size": 7744,
+        "compressed_size": 7744,
+        "compression_ratio": 1.0,
+        "method": "fallback",
+        "error": "'PhiMemoryFoldResult' object has no attribute 'packet'"
+      },
+      "timestamp": "2026-06-23T21:40:46.877642+00:00"
+    }
+  ],
+  "test_results": [
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_execute_reproducibility_replay_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=4101802972\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_execute_reproducibility_replay_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_execute_reproducibility_replay_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\replay_executor.py\")\nE                                                                                                                         ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_execute_reproducibility_replay_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 4.14s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_execute_task_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=3683066315\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_execute_task_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_execute_task_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\api\\multi_agent\\base_agent.py\")\nE                                                                                                                                       ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_execute_task_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 3.74s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=331369359\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\stateful_regeneration.py\")\nE                                                                                                                               ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_grover_role_search_NOTE_REQUIRES_QUANTUM_HARDWARE_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 4.18s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_init_quantum_path_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=936799951\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_init_quantum_path_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_init_quantum_path_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\hyba_genesis_api\\core\\substrate.py\")\nE                                                                                                                           ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_init_quantum_path_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 4.04s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_LambdaTerm_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=750812235\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_LambdaTerm_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_LambdaTerm_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\church_lambda_calculus.py\")\nE                                                                                                                                ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_LambdaTerm_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 4.44s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_total_action_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=3081653478\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test_total_action_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test_total_action_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\yang_mills_spectral_gap.py\")\nE                                                                                                                                 ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test_total_action_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 3.53s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test__execute_action_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=1193301542\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test__execute_action_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test__execute_action_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\autonomous_controller.py\")\nE                                                                                                                               ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test__execute_action_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 3.52s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    },
+    {
+      "test_file": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test__force_mlx_execution_healing.py",
+      "returncode": 2,
+      "stdout": "============================= test session starts =============================\nplatform win32 -- Python 3.11.7, pytest-8.3.4, pluggy-1.6.0 -- C:\\Python311\\python.exe\ncachedir: .pytest_cache\nhypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(WindowsPath('C:/Users/USER/OneDrive/Desktop/HYBA_FULLSTACK/.hypothesis/examples'))\nbenchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)\nUsing --randomly-seed=3017380126\nrootdir: C:\\Users\\USER\nconfigfile: pyproject.toml\nplugins: anyio-4.12.0, Faker-40.21.0, hypothesis-6.92.1, asyncio-0.24.0, benchmark-4.0.0, cov-4.1.0, mock-3.15.1, randomly-4.1.0\nasyncio: mode=Mode.AUTO, default_loop_scope=None\ncollecting ... collected 0 items / 1 error\nWARNING: Failed to generate report: No data to report.\n\n\n=================================== ERRORS ====================================\n_ ERROR collecting OneDrive/Desktop/HYBA_FULLSTACK/tests/autonomous_salamander_healing/test__force_mlx_execution_healing.py _\nC:\\Python311\\Lib\\site-packages\\_pytest\\python.py:493: in importtestmodule\n    mod = import_path(\nC:\\Python311\\Lib\\site-packages\\_pytest\\pathlib.py:587: in import_path\n    importlib.import_module(module_name)\nC:\\Python311\\Lib\\importlib\\__init__.py:126: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n<frozen importlib._bootstrap>:1204: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1176: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:690: in _load_unlocked\n    ???\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:175: in exec_module\n    source_stat, co = _rewrite_test(fn, self.config)\nC:\\Python311\\Lib\\site-packages\\_pytest\\assertion\\rewrite.py:355: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\nC:\\Python311\\Lib\\ast.py:50: in parse\n    return compile(source, filename, mode, flags,\nE     File \"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\tests\\autonomous_salamander_healing\\test__force_mlx_execution_healing.py\", line 20\nE       module_path = Path(\"C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\python_backend\\pythia_mining\\apple_silicon_metal.py\")\nE                                                                                                                             ^\nE   SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape\n\n---------- coverage: platform win32, python 3.11.7-final-0 -----------\n\nFAIL Required test coverage of 5% not reached. Total coverage: 0.00%\n=========================== short test summary info ===========================\nERROR tests\\autonomous_salamander_healing\\test__force_mlx_execution_healing.py\n!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n============================== 1 error in 3.96s ===============================\n",
+      "stderr": "C:\\Python311\\Lib\\site-packages\\pytest_asyncio\\plugin.py:208: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\nC:\\Python311\\Lib\\site-packages\\coverage\\inorout.py:521: CoverageWarning: Module backend was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-module-not-imported\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\nC:\\Python311\\Lib\\site-packages\\coverage\\control.py:950: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.12.0/messages.html#warning-no-data-collected\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nC:\\Python311\\Lib\\site-packages\\pytest_cov\\plugin.py:312: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message))\n",
+      "passed": false
+    }
+  ],
+  "backup_location": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\backups",
+  "compressed_backup_location": "C:\\Users\\USER\\OneDrive\\Desktop\\HYBA_FULLSTACK\\artifacts\\autonomous_salamander_coding\\pulvini_compressed"
+}

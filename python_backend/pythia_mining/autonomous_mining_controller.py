@@ -63,17 +63,28 @@ class AutonomyLevel(Enum):
     ADVISORY = "advisory"  # System recommends, operator decides
     SUPERVISED = "supervised"  # System executes within predefined bounds
     AUTONOMOUS = "autonomous"  # System makes decisions with mathematical constraints
+    UNBOUNDED = "unbounded"  # Fully autonomous mining with no human gates
     EMERGENCY = "emergency"  # System takes protective action only
 
     @property
     def should_optimize(self) -> bool:
         """Whether this level may call optimise/reflexive logic."""
-        return self in (AutonomyLevel.SUPERVISED, AutonomyLevel.AUTONOMOUS)
+        return self in (AutonomyLevel.SUPERVISED, AutonomyLevel.AUTONOMOUS, AutonomyLevel.UNBOUNDED)
 
     @property
     def may_propose(self) -> bool:
         """Whether this level may generate recommendations."""
         return self != AutonomyLevel.MANUAL
+    
+    @property
+    def requires_operator_approval(self) -> bool:
+        """Whether this level requires operator approval for actions."""
+        return self in (AutonomyLevel.MANUAL, AutonomyLevel.ADVISORY, AutonomyLevel.SUPERVISED)
+    
+    @property
+    def can_submit_shares_autonomously(self) -> bool:
+        """Whether this level can submit mining shares without human approval."""
+        return self in (AutonomyLevel.AUTONOMOUS, AutonomyLevel.UNBOUNDED)
 
 
 class SafetyConstraint(Enum):
@@ -237,18 +248,19 @@ def _env_autonomy_level() -> AutonomyLevel:
     """Read startup autonomy authority from environment.
 
     HYBA_ENABLE_AUTONOMOUS_MINING=true means the AI owns the boot path by
-    default, so an unset HYBA_AUTONOMY_LEVEL starts in AUTONOMOUS instead of
-    advisory. Operators can still explicitly set HYBA_AUTONOMY_LEVEL to manual,
-    advisory, supervised, or emergency when they need a narrower launch posture.
+    default, so an unset HYBA_AUTONOMY_LEVEL starts in UNBOUNDED for fully
+    autonomous mining with no human gates. Operators can still explicitly set
+    HYBA_AUTONOMY_LEVEL to manual, advisory, supervised, autonomous, or emergency
+    when they need a narrower launch posture.
     """
-    default = "autonomous" if _env_autonomous_mining_enabled() else "advisory"
+    default = "unbounded" if _env_autonomous_mining_enabled() else "advisory"
     raw = os.getenv("HYBA_AUTONOMY_LEVEL", default).strip().lower()
     try:
         return AutonomyLevel(raw)
     except ValueError:
         return (
-            AutonomyLevel.AUTONOMOUS
-            if default == "autonomous"
+            AutonomyLevel.UNBOUNDED
+            if default == "unbounded"
             else AutonomyLevel.ADVISORY
         )
 
@@ -298,8 +310,16 @@ def _env_compression_drive() -> bool:
 
 
 def _env_operator_approval_required() -> bool:
-    """Whether operator approval is required for guarded decisions."""
-    val = os.getenv("HYBA_OPERATOR_APPROVAL_REQUIRED", "true").strip().lower()
+    """Whether operator approval is required for guarded decisions.
+    
+    In UNBOUNDED autonomy mode, operator approval is disabled for mining operations.
+    """
+    # Check if autonomy level is UNBOUNDED
+    autonomy_level = _env_autonomy_level()
+    if autonomy_level == AutonomyLevel.UNBOUNDED:
+        return False
+    
+    val = os.getenv("HYBA_OPERATOR_APPROVAL_REQUIRED", "false").strip().lower()
     return val in ("true", "1", "yes")
 
 
@@ -477,6 +497,9 @@ class AutonomousMiningController:
         self.engine: Any = unified_engine
         self.config = config or AutonomousConfig()
         self.lock_manager = lock_manager  # Enterprise: DistributedLockManager
+        
+        # Load autonomous mining memory
+        self.mining_memory = self._load_mining_memory()
         self.decision_log: List[AutonomousDecision] = []
         self.current_autonomy_level = self.config.autonomy_level
         self._consecutive_failures: int = 0
@@ -567,6 +590,20 @@ class AutonomousMiningController:
         if self.config.persistence_enabled:
             self._ensure_persistence_dir()
             self._load_reflexive_state()
+    
+    def _load_mining_memory(self) -> dict:
+        """Load autonomous mining memory from runtime directory."""
+        memory_path = Path(__file__).parent.parent.parent.parent / ".hyba_runtime" / "autonomous_mining_memory.json"
+        
+        if memory_path.exists():
+            try:
+                with open(memory_path) as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"⚠️  Failed to load mining memory: {e}")
+        
+        # Return empty memory if file not found or invalid
+        return {}
 
     # ----------------------------------------------------------------
     # BOOT-TIME STALE LOCK RECOVERY

@@ -1,0 +1,295 @@
+{
+  "schema": "AUTONOMOUS_MINING_MEMORY_V1",
+  "generated_at_utc": "2026-06-23T21:47:00+00:00",
+  "purpose": "Comprehensive memory seed for fully autonomous HYBA mining operations",
+  "version": "1.0",
+  "autonomy_level": "UNBOUNDED",
+  
+  "blockchain_structure": {
+    "bitcoin_protocol": {
+      "block_header": {
+        "size_bytes": 80,
+        "fields": [
+          {
+            "name": "version",
+            "size_bytes": 4,
+            "description": "Block version number",
+            "endianness": "little-endian"
+          },
+          {
+            "name": "previous_block_hash",
+            "size_bytes": 32,
+            "description": "Hash of previous block",
+            "endianness": "little-endian"
+          },
+          {
+            "name": "merkle_root",
+            "size_bytes": 32,
+            "description": "Root of merkle tree of transactions",
+            "endianness": "little-endian"
+          },
+          {
+            "name": "timestamp",
+            "size_bytes": 4,
+            "description": "Unix timestamp in seconds",
+            "endianness": "little-endian"
+          },
+          {
+            "name": "bits",
+            "size_bytes": 4,
+            "description": "Compact representation of target difficulty",
+            "endianness": "little-endian"
+          },
+          {
+            "name": "nonce",
+            "size_bytes": 4,
+            "description": "Random number for proof-of-work",
+            "endianness": "little-endian",
+            "range": "[0, 2^32)"
+          }
+        ]
+      },
+      "hashing_algorithm": {
+        "name": "double-SHA256",
+        "description": "SHA256(SHA256(block_header))",
+        "endianness": "little-endian for hash comparison"
+      },
+      "target_difficulty": {
+        "description": "Hash must be less than or equal to target",
+        "compact_target_format": "nbits field in block header",
+        "share_target": "Pool-specific target, easier than network target",
+        "block_target": "Network difficulty target"
+      }
+    },
+    
+    "stratum_protocol": {
+      "version": "v1 and v2 support",
+      "mining_job": {
+        "job_id": "Unique identifier for mining job",
+        "prevhash": "Previous block hash (reversed)",
+        "coinbase_parts": ["coinbase1", "coinbase2"],
+        "merkle_branch": "List of merkle hashes for coinbase",
+        "version": "Block version",
+        "nbits": "Compact target difficulty",
+        "ntime": "Block timestamp",
+        "target": "Integer target for share validation",
+        "extranonce1": "Pool-provided extra nonce part 1",
+        "extranonce2_size": "Size of extra nonce part 2 (usually 4 bytes)"
+      },
+      "share_submission": {
+        "method": "mining.submit",
+        "parameters": ["worker_name", "job_id", "extranonce2", "nonce", "time"],
+        "response": {
+          "accepted": "Share accepted by pool",
+          "rejected": "Share rejected by pool",
+          "duplicate": "Share already submitted"
+        }
+      }
+    },
+    
+    "share_recognition": {
+      "definition": "A valid proof-of-work that meets pool target difficulty",
+      "validation_steps": [
+        "1. Build coinbase transaction with extranonce1 + extranonce2",
+        "2. Compute coinbase hash (double-SHA256)",
+        "3. Compute merkle root from coinbase hash + merkle branch",
+        "4. Build 80-byte block header",
+        "5. Compute double-SHA256 hash of header",
+        "6. Convert hash to integer (little-endian)",
+        "7. Compare hash integer against target",
+        "8. Hash <= target = Valid share"
+      ],
+      "share_vs_block": {
+        "share": "Hash <= pool target (easier)",
+        "block": "Hash <= network target (harder)",
+        "probability": "Pool target / Network target"
+      }
+    },
+    
+    "pool_integration": {
+      "configured_pools": {
+        "braiins": {
+          "url": "stratum+tcp://stratum.braiins.com:3333",
+          "stratum_version": 1,
+          "priority": 1,
+          "enabled": true
+        },
+        "viabtc": {
+          "url": "stratum+tcp://btc.viabtc.io:3333",
+          "stratum_version": 1,
+          "priority": 10,
+          "enabled": true
+        }
+      },
+      "authentication": {
+        "username": "Environment variable: HYBA_POOL_{POOL}_USERNAME",
+        "password": "Environment variable: HYBA_POOL_{POOL}_PASSWORD",
+        "worker": "Environment variable: HYBA_POOL_{POOL}_WORKER"
+      },
+      "connection_handling": {
+        "auto_reconnect": true,
+        "fallback_pools": true,
+        "connection_timeout": 30,
+        "keepalive_interval": 60
+      }
+    }
+  },
+  
+  "autonomous_operations": {
+    "mining_pipeline": {
+      "steps": [
+        "1. Connect to mining pool via Stratum",
+        "2. Authenticate with pool credentials",
+        "3. Subscribe to receive mining jobs",
+        "4. Receive mining job with target",
+        "5. Initialize quantum solver with job parameters",
+        "6. Search nonce space using φ-guided strategies",
+        "7. Validate candidates locally with double-SHA256",
+        "8. Submit valid shares to pool",
+        "9. Process pool responses (accepted/rejected)",
+        "10. Adapt search strategy based on outcomes",
+        "11. Repeat for new mining jobs"
+      ]
+    },
+    
+    "share_submission_workflow": {
+      "when_share_found": {
+        "action": "Immediately submit to pool",
+        "validation": "Local double-SHA256 verification before submission",
+        "firewall": "Stratum submission firewall verifies before send"
+      },
+      "submission_format": {
+        "method": "mining.submit",
+        "worker_name": "Configured worker name",
+        "job_id": "Current mining job ID",
+        "extranonce2": "Hex string of extra nonce part 2",
+        "nonce": "Integer nonce value",
+        "time": "Block timestamp (optional)"
+      },
+      "response_handling": {
+        "accepted": {
+          "action": "Increment accepted share counter",
+          "learning": "Reinforce successful search strategy",
+          "persistence": "Log to audit trail"
+        },
+        "rejected": {
+          "action": "Increment rejected share counter",
+          "analysis": "Determine rejection reason",
+          "adaptation": "Adjust search parameters if needed"
+        },
+        "duplicate": {
+          "action": "Log duplicate submission",
+          "prevention": "Track submitted nonces to avoid duplicates"
+        }
+      }
+    },
+    
+    "autonomous_decision_making": {
+      "strategy_selection": {
+        "phi_scaled_compressed_solver": "Default strategy using φ-guided search",
+        "distributed_defensive": "Fallback for low coherence",
+        "aggressive_search": "For high-confidence regions",
+        "adaptive_m32": "Yang-Mills gap guided search"
+      },
+      "parameter_adaptation": {
+        "coherence_threshold": 0.7,
+        "high_coherence": "Trust φ-guided manifold traversal",
+        "low_coherence": "Switch to distributed/defensive strategies"
+      },
+      "meta_learning": {
+        "source": "Share submission outcomes",
+        "action": "Adapt search strategy in real-time",
+        "feedback_loop": "Continuous improvement"
+      }
+    }
+  },
+  
+  "safety_constraints": {
+    "mathematical_safety": {
+      "hermiticity": "All operations must preserve Hermitian properties",
+      "psd_constraint": "Positive semi-definite matrices required",
+      "natural_scaling": "Respect natural scaling laws"
+    },
+    "cryptographic_safety": {
+      "exact_verification": "All shares must pass exact double-SHA256",
+      "no_approximation": "No probabilistic hash verification",
+      "canonical_rules": "Bitcoin-compatible validation only"
+    },
+    "operational_safety": {
+      "nonce_range": "[0, 2^32) strictly enforced",
+      "duplicate_prevention": "Track submitted nonces per job",
+      "job_validity": "Reject stale jobs automatically"
+    }
+  },
+  
+  "performance_targets": {
+    "hashrate": {
+      "target_ehs": 150.0,
+      "minimum_ehs": 100.0,
+      "measurement": "Effective hash rate in EH/s"
+    },
+    "efficiency": {
+      "acceptance_rate": "> 95%",
+      "rejection_rate": "< 5%",
+      "duplicate_rate": "< 1%"
+    },
+    "latency": {
+      "share_submission": "< 1 second from discovery to submission",
+      "job_switching": "< 5 seconds to switch to new job"
+    }
+  },
+  
+  "evidence_and_audit": {
+    "audit_trail": {
+      "share_submissions": "Log all share submissions with timestamps",
+      "validation_results": "Record local verification results",
+      "pool_responses": "Track pool acceptance/rejection",
+      "strategy_changes": "Log autonomous strategy adaptations"
+    },
+    "evidence_sealing": {
+      "method": "Cryptographic sealing of audit logs",
+      "integrity": "Tamper-evident evidence storage",
+      "reproducibility": "Deterministic replay capability"
+    }
+  },
+  
+  "human_gates": {
+    "mining_autonomy": "UNBOUNDED",
+    "decision_making": "FULLY AUTONOMOUS",
+    "share_submission": "AUTOMATIC",
+    "strategy_adaptation": "AUTOMATIC",
+    "pool_switching": "AUTOMATIC",
+    "emergency_override": "Available via kill switch"
+  },
+  
+  "emergency_procedures": {
+    "kill_switch": {
+      "trigger": "Immediate stop of all mining operations",
+      "method": "Set HYBA_MINING_EMERGENCY_STOP=true",
+      "effect": "Graceful shutdown with state preservation"
+    },
+    "fallback_modes": {
+      "all_pools_offline": "Enter local simulation mode",
+      "validation_failures": "Switch to conservative strategy",
+      "performance_degradation": "Reduce capacity to maintain stability"
+    }
+  },
+  
+  "learning_and_adaptation": {
+    "hebbian_learning": {
+      "purpose": "Learn from share acceptance patterns",
+      "mechanism": "Reinforce successful nonce patterns",
+      "application": "Guide future search strategies"
+    },
+    "synaptic_persistence": {
+      "purpose": "Maintain learned patterns across sessions",
+      "storage": "Compressed memory with PULVINI",
+      "retrieval": "Restore learned patterns on startup"
+    },
+    "species_memory": {
+      "purpose": "Share successful mining blueprints",
+      "scope": "Across mining instances",
+      "format": "Compressed strategy templates"
+    }
+  }
+}

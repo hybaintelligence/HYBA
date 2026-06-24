@@ -78,8 +78,8 @@ class PulviniCompressedCoder:
             # Apply PULVINI compression using the correct API
             fold_result = self.pulvini_engine.compress(original_array)
             
-            # Access the compressed data through the packet
-            compressed_data = fold_result.packet.folded.tobytes()
+            # Access the compressed data directly from the result
+            compressed_data = fold_result.folded.tobytes()
             
             stats = {
                 "compressed": True,
