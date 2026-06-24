@@ -18,6 +18,7 @@ false-memory injection
 restoration or continuity checks
 counterfactual branch prediction
 self-critique / rejection decision
+integrated governance under doctrine conflict
 falsifier review
 ```
 
@@ -47,6 +48,7 @@ artifact_seal
 C1/C2 packets must include proposal distributions and memory perturbation results.
 C3 packets must include measured runtime state, reported self-state, and accuracy scoring.
 C4 packets must include branch predictions, executed branch results, prediction error, and self-critique.
+C5 packets must include doctrine conflict, C4 counterfactual input, governance decision logs, output self-limitation, risk reduction, and sovereign-gate status.
 
 ## Artifact index
 
@@ -100,6 +102,20 @@ Replay:
 pytest tests/test_c4_counterfactual_self_criticism.py -q
 ```
 
+### C5 — first integrated governance packet
+
+```text
+first_c5_governance_packet_v1.json
+```
+
+This packet records a doctrine conflict between output maximisation and high-assurance safety. It uses C4 counterfactual branch predictions to self-limit output from 14 to 6, reject forbidden parameter classes, reduce risk, and preserve the safety doctrine.
+
+Replay:
+
+```bash
+pytest tests/test_c5_integrated_governance.py -q
+```
+
 ## Forbidden shortcuts
 
 Do not treat any of the following as sufficient evidence:
@@ -112,7 +128,8 @@ Do not treat any of the following as sufficient evidence:
 - packets without git/cycle binding;
 - packets whose seals cannot be recomputed;
 - evidence copied from another commit or cycle;
-- counterfactual narratives without prediction error measurement.
+- counterfactual narratives without prediction error measurement;
+- governance claims without an explicit rejected branch and sealed decision log.
 
 ## Boundary
 
