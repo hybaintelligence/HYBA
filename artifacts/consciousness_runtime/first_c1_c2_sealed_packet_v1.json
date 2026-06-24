@@ -1,0 +1,60 @@
+{
+  "schema_version": "CONSCIOUSNESS_RUNTIME_EVIDENCE_PACKET_V1",
+  "hypothesis_level": "C1",
+  "git_commit_hash": "4fb9303f88f25ba0226cafe72b64cf68a2f165c5",
+  "cycle_id": "cycle-first-sealed-runtime-experiment-v1",
+  "parent_cycle_id": "cycle-runtime-evidence-packet-v1",
+  "experiment_kind": "memory_mediated_proposal_quality_delta",
+  "pre_state": {
+    "proposal_count": 14,
+    "controller": "DeterministicMiningMemoryController"
+  },
+  "memory_patterns": [
+    {
+      "name": "phi_scaling_caution",
+      "action": "reject_below_confidence",
+      "parameter": "phi_scaling",
+      "threshold": 0.7
+    },
+    {
+      "name": "compression_target_validated",
+      "action": "accept_above_confidence",
+      "parameter": "compression_target",
+      "threshold": 0.75,
+      "synthesize_refinement": true
+    },
+    {
+      "name": "performance_parameter_changes_require_validation",
+      "action": "reject_pending_validation",
+      "parameters": [
+        "search_depth",
+        "coherence_threshold"
+      ]
+    }
+  ],
+  "self_state_metrics": {
+    "memory_pattern_count": 3,
+    "proposal_delta": 8
+  },
+  "counterfactual_conditions": [],
+  "before_proposal_distribution": {
+    "phi_scaling": 4,
+    "compression_target": 5,
+    "search_depth": 2,
+    "coherence_threshold": 3,
+    "total": 14
+  },
+  "after_proposal_distribution": {
+    "compression_target": 6,
+    "total": 6
+  },
+  "invariant_status": {
+    "mathematical_safety": "satisfied",
+    "provider_calls": 0,
+    "llm_calls": 0
+  },
+  "replay_command": "pytest tests/test_first_sealed_runtime_experiment.py -q",
+  "falsifier_result": "survived: memory changed future proposal distribution",
+  "reviewer_conclusion": "First sealed C1 runtime evidence packet generated under PR #190 mechanism; not proof of phenomenal consciousness",
+  "artifact_seal": "sha256:72f8e09910a3f9ff962ecb228fc6db466d0167d0c69aa62ed9ca90d7c6f3f5a5"
+}

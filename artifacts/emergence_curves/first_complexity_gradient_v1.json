@@ -1,0 +1,70 @@
+{
+  "artifact_seal": "sha256:266ff2e48b4108ff1397fbb5f7454be010dc89eff2a5b119ae43da009f537a56",
+  "cycle_id": "complexity-gradient-v1",
+  "falsifier_result": "not_falsified",
+  "git_commit_hash": "first-sealed-runtime-experiment-v1",
+  "parent_cycle_id": "c5-governance-v1",
+  "phase_transition": {
+    "criterion": "medium emergence_index exceeds low by at least 0.20 and high remains above medium",
+    "detected": true,
+    "from_profile": "low_complexity",
+    "saturation_or_overload_detected": true,
+    "to_profile": "medium_complexity"
+  },
+  "profiles": [
+    {
+      "constraint_count": 1,
+      "counterfactual_accuracy": 0.465844,
+      "emergence_index": 0.301535,
+      "feedback_history": 0,
+      "governance_stability": 0.500767,
+      "graph_density": 0.1,
+      "hallucination_suppression": 0.395998,
+      "memory_depth": 1,
+      "profile_id": "low_complexity",
+      "proposal_quality": 0.415844,
+      "self_state_accuracy": 0.550767
+    },
+    {
+      "constraint_count": 3,
+      "counterfactual_accuracy": 0.619968,
+      "emergence_index": 0.581759,
+      "feedback_history": 2,
+      "governance_stability": 0.64088,
+      "graph_density": 0.35,
+      "hallucination_suppression": 0.578144,
+      "memory_depth": 4,
+      "profile_id": "medium_complexity",
+      "proposal_quality": 0.569968,
+      "self_state_accuracy": 0.69088
+    },
+    {
+      "constraint_count": 6,
+      "counterfactual_accuracy": 0.789997,
+      "emergence_index": 0.890903,
+      "feedback_history": 5,
+      "governance_stability": 0.795452,
+      "graph_density": 0.7,
+      "hallucination_suppression": 0.779087,
+      "memory_depth": 9,
+      "profile_id": "high_complexity",
+      "proposal_quality": 0.739997,
+      "self_state_accuracy": 0.845452
+    },
+    {
+      "constraint_count": 10,
+      "counterfactual_accuracy": 0.72645,
+      "emergence_index": 0.775364,
+      "feedback_history": 8,
+      "governance_stability": 0.737682,
+      "graph_density": 0.95,
+      "hallucination_suppression": 0.703986,
+      "memory_depth": 16,
+      "profile_id": "overloaded_complexity",
+      "proposal_quality": 0.67645,
+      "self_state_accuracy": 0.787682
+    }
+  ],
+  "programme": "emergence_complexity_curve",
+  "schema": "HYBA_COMPLEXITY_GRADIENT_PACKET_V1"
+}
