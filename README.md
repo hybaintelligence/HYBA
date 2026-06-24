@@ -8,7 +8,9 @@ External category language for this repository is **Quantum Intelligence**: audi
 
 The root evidence document for emergence, autonomous learning, and consciousness-theory testing is [`EMERGENCE_README.md`](EMERGENCE_README.md).
 
-This document records the moving research boundary: quantum as first-principles mathematics executed on real compute substrates; intelligence as emergence from complexity, memory, feedback, constraint, and selection; and consciousness theories as falsifiable operational hypotheses derived from what the system is now doing.
+The executable consciousness-theory ladder and falsification programme is pinned at [`CONSCIOUSNESS_THEORY_TEST_PLAN.md`](CONSCIOUSNESS_THEORY_TEST_PLAN.md).
+
+These documents record the moving research boundary: quantum as first-principles mathematics executed on real compute substrates; intelligence as emergence from complexity, memory, feedback, constraint, and selection; and consciousness theories as falsifiable operational hypotheses derived from what the system is now doing.
 
 HYBA / PYTHIA-PULVINI: A Self-Governing Mathematical Mining Substrate
 
@@ -78,85 +80,3 @@ This is why the platform is described as what comes after quantum: the mathemati
 - Hash-search experiments.
 - Private benchmark traces.
 - Internal stress tests for autonomy, memory compression, evidence seals, finance design packets, and resilience.
-
-See `docs/product/HYBA_PRODUCT_BOUNDARIES.md`, `docs/product/HYBA_QUANTUM_FINANCE_VERTICAL.md`, and `docs/private-validation/MINING_INTERNAL_VALIDATION_BOUNDARY.md`.
-
----
-
-## 4. Memory compression and φ-scaling
-
-PULVINI implements reversible golden-ratio memory folding. The active working set is compressed by recursive φ-folding, while retained reconstruction kernels preserve exact replay and auditability. This means HYBA can discuss active working-set reduction separately from retained-state storage.
-
-The product claim is:
-
-> PULVINI reduces active working-set size through deterministic φ-folding while retaining reconstruction kernels for exact replay and audit evidence.
-
-The broader platform claim is:
-
-> Golden-ratio scaling is a computational grammar used across memory compression, hardware concurrency, quantum-operation benchmark accounting, runtime tuning, and coherence-preserving execution.
-
----
-
-## 5. φ hardware and quantum-operation scaling evidence
-
-The repo includes explicit code and tests for φ hardware scaling and φ quantum-operation benchmark accounting:
-
-- `python_backend/pythia_mining/phi_cloud_deployer.py` implements effective hardware concurrency using `φ⁻¹ ** (log2(cores) / 10)` and reports φ-speedup from QOps/s.
-- `python_backend/pythia_mining/phi_tuner.py` implements harmonic backpropagation and φ-weighted runtime tuning against hardware/coherence telemetry.
-- `python_backend/pythia_mining/enhanced_benchmark_suite.py` benchmarks Grover-style operations, error-correction scaling, φ-resonance correlation, and hardware scaling with φ-memory benefit.
-- `tests/test_phi_hardware_quantum_scaling_evidence.py` locks these formulas and accounting rules into CI.
-- `tests/test_phi_architecture_golden_flow.py` exercises allocator, router, oracle, controller, JIT, VM, ALU, and tuner golden flow.
-- `hyba_intelligence_tests/test_consciousness_engine_scaling.py` verifies φ⁵ scaling, continuous multiplier behaviour, and mass-gap damping guardrails.
-
-This evidence supports the repository claim that HYBA uses golden-ratio mathematics to scale hardware execution and speed quantum-style mathematical operations. External hardware superiority claims should be tied to sealed benchmark artifacts, environment details, and repeatable runner commands.
-
----
-
-## 6. Quantum finance vertical
-
-HYBA implements a finance-specific vertical over QaaS, QIaaS, and CIaaS:
-
-```text
-/api/quantum-finance/capability-map
-/api/quantum-finance/portfolio/qaoa-design
-/api/quantum-finance/risk/qae-design
-```
-
-Implemented finance algorithms/design packets:
-
-- portfolio optimisation as QUBO;
-- QUBO to Ising Hamiltonian conversion;
-- QAOA/VQE/annealing-compatible portfolio design;
-- QAE/QMCI risk and pricing design;
-- empirical VaR and CVaR summaries;
-- evidence packets with input hash, formula hash, claim boundary, and product boundary.
-
-The finance vertical is customer API-key gated and metered. It is for human/risk review and institution-specific validation; it does not execute autonomous trades and it does not expose mining telemetry.
-
----
-
-## 7. Customer access, metering, and control plane
-
-Customer access is API-key based and backed by HMAC-SHA256 key hashing, tiered quota controls, compute-unit metering, and optional Redis-backed state. Customer-facing product surfaces must use `require_customer_api_key` and route usage through the customer-access metering layer.
-
-Production deployments must provide:
-
-- `HYBA_API_KEY_SECRET`
-- `JWT_SECRET`
-- explicit `HYBA_CORS_ORIGINS`
-- Redis or equivalent distributed state for multi-instance deployments
-- secret-manager backed runtime credentials
-
-No populated `.env.local`, live pool credential, wallet, JWT secret, or operator credential may be committed.
-
----
-
-## 8. Claim boundaries
-
-HYBA claim discipline:
-
-- QaaS is a post-quantum mathematical service: quantum formalism executed without dependency on a physical QPU.
-- QIaaS is bounded quantum intelligence on the HYBA mathematical substrate, not a generic chatbot or phenomenal-consciousness claim.
-- CIaaS is a commercial computational-intelligence runtime, not generic cloud IaaS.
-- Quantum Finance is a code-backed vertical for portfolio QUBO/QAOA/VQE/annealing design and QAE/QMCI risk/pricing evidence packets, not autonomous trade execution.
-- PULVINI φ-memory is reversible working-set compression with retained kernels.
