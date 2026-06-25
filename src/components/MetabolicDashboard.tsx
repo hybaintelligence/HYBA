@@ -1,14 +1,13 @@
 /**
  * Metabolic Dashboard - Real-time Salamander regeneration & self-optimization visibility
- * 
- * Purpose: Translate raw Φ-density and reflexive cycle metrics into 
+ *
+ * Purpose: Translate raw Φ-density and reflexive cycle metrics into
  * executive-comprehensible "metabolic rate" and "optimization events"
- * 
+ *
  * Trust Bridge: Every metric comes from cryptographically sealed backend evidence
  */
 
-import React, { useEffect, useState } from 'react';
-import { Sparklines, SparklinesLine, SparklinesSpots } from 'react-sparklines';
+import React, { useEffect, useState } from "react";
 
 interface StartupOptimization {
   proposal_id: string;
@@ -39,9 +38,40 @@ interface MetabolicDashboardProps {
   refreshIntervalMs?: number;
 }
 
+const PhiSparkline: React.FC<{ data: number[] }> = ({ data }) => {
+  const width = 200;
+  const height = 40;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data
+    .map((value, index) => {
+      const x = data.length === 1 ? width : (index / (data.length - 1)) * width;
+      const y = height - ((value - min) / range) * height;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      aria-label="Φ-density trend"
+      className="phi-sparkline"
+      role="img"
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      <polyline fill="none" points={points} stroke="#00ff88" strokeWidth="2" />
+      {data.map((value, index) => {
+        const cx = data.length === 1 ? width : (index / (data.length - 1)) * width;
+        const cy = height - ((value - min) / range) * height;
+        return <circle key={`${index}-${value}`} cx={cx} cy={cy} fill="#00ff88" r="2" />;
+      })}
+    </svg>
+  );
+};
+
 export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
   autoRefresh = true,
-  refreshIntervalMs = 5000
+  refreshIntervalMs = 5000,
 }) => {
   const [state, setState] = useState<MetabolicState | null>(null);
   const [phiHistory, setPhiHistory] = useState<number[]>([]);
@@ -51,12 +81,12 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
   const fetchMetabolicState = async () => {
     try {
       const [startupRes, substrateRes] = await Promise.all([
-        fetch('/api/health/startup-self-healing'),
-        fetch('/api/substrate')
+        fetch("/api/health/startup-self-healing"),
+        fetch("/api/substrate"),
       ]);
 
       if (!startupRes.ok || !substrateRes.ok) {
-        throw new Error('Failed to fetch metabolic state');
+        throw new Error("Failed to fetch metabolic state");
       }
 
       const startupData = await startupRes.json();
@@ -64,17 +94,18 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
 
       // Parse evidence report if available
       let metabolicState: MetabolicState;
-      
+
       if (startupData.completed && startupData.after_metrics) {
         metabolicState = {
           phi_density: startupData.after_metrics.phi_density || 0,
           reflexive_cycle_count: startupData.epochs_executed || 0,
           proposal_acceptance_rate: startupData.self_optimising?.proposal_acceptance_rate || 0,
-          last_cycle_duration_ms: startupData.self_optimising?.last_reflexive_cycle_duration_ms || 0,
+          last_cycle_duration_ms:
+            startupData.self_optimising?.last_reflexive_cycle_duration_ms || 0,
           knowledge_growth_rate: 0, // Would need to parse from full report
           optimizations: [], // Would need to parse proposals from evidence file
           substrate_ready: substrateData.ready || false,
-          organism_cns_active: substrateData.organism_cns_active || false
+          organism_cns_active: substrateData.organism_cns_active || false,
         };
       } else {
         // Substrate is ready but no startup report yet
@@ -86,16 +117,16 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
           knowledge_growth_rate: 0,
           optimizations: [],
           substrate_ready: substrateData.ready || false,
-          organism_cns_active: substrateData.organism_cns_active || false
+          organism_cns_active: substrateData.organism_cns_active || false,
         };
       }
 
       setState(metabolicState);
-      setPhiHistory(prev => [...prev.slice(-29), metabolicState.phi_density]);
+      setPhiHistory((prev) => [...prev.slice(-29), metabolicState.phi_density]);
       setLoading(false);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
       setLoading(false);
     }
   };
@@ -129,15 +160,13 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
   if (!state) return null;
 
   // Translate technical metrics to executive language
-  const metabolicRate = state.reflexive_cycle_count > 0 
-    ? `${(1000 / state.last_cycle_duration_ms).toFixed(1)} cycles/sec`
-    : 'Dormant';
+  const metabolicRate =
+    state.reflexive_cycle_count > 0
+      ? `${(1000 / state.last_cycle_duration_ms).toFixed(1)} cycles/sec`
+      : "Dormant";
 
-  const healthStatus = state.phi_density > 0.9 
-    ? 'Optimal' 
-    : state.phi_density > 0.7 
-    ? 'Healthy' 
-    : 'Degraded';
+  const healthStatus =
+    state.phi_density > 0.9 ? "Optimal" : state.phi_density > 0.7 ? "Healthy" : "Degraded";
 
   const optimizationEfficiency = (state.proposal_acceptance_rate * 100).toFixed(0);
 
@@ -147,11 +176,11 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
       <div className="dashboard-header">
         <h2>🧬 Salamander Metabolic State</h2>
         <div className="status-indicators">
-          <span className={`status ${state.substrate_ready ? 'ready' : 'initializing'}`}>
-            {state.substrate_ready ? '✅ Substrate Ready' : '⏳ Initializing'}
+          <span className={`status ${state.substrate_ready ? "ready" : "initializing"}`}>
+            {state.substrate_ready ? "✅ Substrate Ready" : "⏳ Initializing"}
           </span>
-          <span className={`status ${state.organism_cns_active ? 'active' : 'dormant'}`}>
-            {state.organism_cns_active ? '🧠 CNS Active' : '💤 CNS Dormant'}
+          <span className={`status ${state.organism_cns_active ? "active" : "dormant"}`}>
+            {state.organism_cns_active ? "🧠 CNS Active" : "💤 CNS Dormant"}
           </span>
         </div>
       </div>
@@ -162,20 +191,11 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
         <div className="metric-card primary">
           <div className="metric-header">
             <span className="metric-label">Φ-Density</span>
-            <span className={`health-badge ${healthStatus.toLowerCase()}`}>
-              {healthStatus}
-            </span>
+            <span className={`health-badge ${healthStatus.toLowerCase()}`}>{healthStatus}</span>
           </div>
-          <div className="metric-value">
-            {state.phi_density.toFixed(3)}
-          </div>
+          <div className="metric-value">{state.phi_density.toFixed(3)}</div>
           <div className="metric-sparkline">
-            {phiHistory.length > 1 && (
-              <Sparklines data={phiHistory} width={200} height={40}>
-                <SparklinesLine color="#00ff88" />
-                <SparklinesSpots />
-              </Sparklines>
-            )}
+            {phiHistory.length > 1 && <PhiSparkline data={phiHistory} />}
           </div>
           <p className="metric-description">
             Integrated information density - measures coherence across substrate
@@ -187,12 +207,8 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
           <div className="metric-header">
             <span className="metric-label">Metabolic Rate</span>
           </div>
-          <div className="metric-value">
-            {metabolicRate}
-          </div>
-          <div className="metric-detail">
-            {state.reflexive_cycle_count} total cycles
-          </div>
+          <div className="metric-value">{metabolicRate}</div>
+          <div className="metric-detail">{state.reflexive_cycle_count} total cycles</div>
           <p className="metric-description">
             Self-optimization frequency - Salamander regeneration events
           </p>
@@ -203,12 +219,8 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
           <div className="metric-header">
             <span className="metric-label">Optimization Efficiency</span>
           </div>
-          <div className="metric-value">
-            {optimizationEfficiency}%
-          </div>
-          <div className="metric-detail">
-            Proposal acceptance rate
-          </div>
+          <div className="metric-value">{optimizationEfficiency}%</div>
+          <div className="metric-detail">Proposal acceptance rate</div>
           <p className="metric-description">
             Percentage of autonomous proposals successfully applied
           </p>
@@ -220,16 +232,12 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
             <span className="metric-label">Response Latency</span>
           </div>
           <div className="metric-value">
-            {state.last_cycle_duration_ms > 0 
+            {state.last_cycle_duration_ms > 0
               ? `${state.last_cycle_duration_ms.toFixed(2)}ms`
-              : 'N/A'}
+              : "N/A"}
           </div>
-          <div className="metric-detail">
-            Last optimization cycle
-          </div>
-          <p className="metric-description">
-            Time to generate and apply self-optimizations
-          </p>
+          <div className="metric-detail">Last optimization cycle</div>
+          <p className="metric-description">Time to generate and apply self-optimizations</p>
         </div>
       </div>
 
@@ -242,8 +250,8 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
               <div key={opt.proposal_id || idx} className="optimization-card">
                 <div className="opt-header">
                   <span className="opt-type">{opt.improvement_type}</span>
-                  <span className={`opt-status ${opt.applied ? 'applied' : 'pending'}`}>
-                    {opt.applied ? '✅ Applied' : '⏳ Pending'}
+                  <span className={`opt-status ${opt.applied ? "applied" : "pending"}`}>
+                    {opt.applied ? "✅ Applied" : "⏳ Pending"}
                   </span>
                 </div>
                 <div className="opt-change">
@@ -257,7 +265,9 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
                 </div>
                 <div className="opt-confidence">
                   <span>Logical consistency: {(opt.logical_consistency * 100).toFixed(0)}%</span>
-                  <span>Counterfactual confidence: {(opt.counterfactual_confidence * 100).toFixed(0)}%</span>
+                  <span>
+                    Counterfactual confidence: {(opt.counterfactual_confidence * 100).toFixed(0)}%
+                  </span>
                 </div>
                 <div className="opt-constraints">
                   ✓ {opt.constraints_satisfied.length} constraints satisfied
@@ -272,17 +282,24 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
       <div className="executive-summary">
         <h3>Executive Summary</h3>
         <p>
-          The HYBA substrate is operating at <strong>{(state.phi_density * 100).toFixed(1)}% 
-          Φ-density</strong>, indicating <strong>{healthStatus.toLowerCase()}</strong> system coherence.
+          The HYBA substrate is operating at{" "}
+          <strong>{(state.phi_density * 100).toFixed(1)}% Φ-density</strong>, indicating{" "}
+          <strong>{healthStatus.toLowerCase()}</strong> system coherence.
           {state.reflexive_cycle_count > 0 && (
-            <> The Salamander regeneration substrate has completed <strong>{state.reflexive_cycle_count} 
-            autonomous optimization cycles</strong> with <strong>{optimizationEfficiency}% 
-            acceptance rate</strong>, demonstrating stable self-healing capability.</>
+            <>
+              {" "}
+              The Salamander regeneration substrate has completed{" "}
+              <strong>
+                {state.reflexive_cycle_count} autonomous optimization cycles
+              </strong> with <strong>{optimizationEfficiency}% acceptance rate</strong>,
+              demonstrating stable self-healing capability.
+            </>
           )}
         </p>
         <p>
-          All autonomous optimizations respect mathematical invariants (hermiticity, positive 
-          semi-definiteness, energy conservation) and are cryptographically sealed for audit compliance.
+          All autonomous optimizations respect mathematical invariants (hermiticity, positive
+          semi-definiteness, energy conservation) and are cryptographically sealed for audit
+          compliance.
         </p>
       </div>
     </div>
