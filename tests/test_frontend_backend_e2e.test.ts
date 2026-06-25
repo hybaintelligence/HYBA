@@ -1,11 +1,25 @@
+/**
+ * HYBA Frontend-Backend E2E Communication Tests
+ *
+ * Validates that the Express bridge server correctly proxies requests
+ * to the Python FastAPI backend. These tests REQUIRE a live stack:
+ *   - Bridge on http://127.0.0.1:3000
+ *   - Backend on http://127.0.0.1:3001
+ *
+ * In CI, the backend is started automatically by frontend-ci.yml.
+ * If the stack is not running, tests FAIL to prevent silent skips.
+ */
+
 import { beforeAll, describe, expect, it } from "vitest";
 
 const BRIDGE_BASE = "http://127.0.0.1:3000";
 const BACKEND_BASE = "http://127.0.0.1:3001";
 
+const IS_CI = process.env.CI === "true";
+
 async function canReach(url: string): Promise<boolean> {
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(1500) });
+    const response = await fetch(url, { signal: AbortSignal.timeout(3000) });
     return response.status < 600;
   } catch {
     return false;
@@ -23,10 +37,19 @@ describe("Frontend-Backend E2E Communication", () => {
       const data = await response.json();
       liveStackAvailable = data.backendReachable === true;
     }
-    
+
+    if (!liveStackAvailable && IS_CI) {
+      throw new Error(
+        "FATAL: Frontend-backend stack is not available in CI! " +
+        "The Python backend must be running on port 3001 and the bridge on port 3000. " +
+        "This test suite validates frontend-backend communication and cannot be skipped."
+      );
+    }
+
     if (!liveStackAvailable) {
       console.warn(
-        "Skipping live frontend/backend assertions because bridge is not available or cannot reach backend.",
+        "⚠️  Skipping live frontend/backend assertions because the stack is not available " +
+        "(bridge or backend not running). Run `npm run dev:full` to start both services.",
       );
     }
   });

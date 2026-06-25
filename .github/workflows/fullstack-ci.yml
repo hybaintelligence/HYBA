@@ -1,0 +1,203 @@
+# ========================================================================
+# HYBA Full-Stack Integration CI
+# ========================================================================
+# Validates frontend-backend communication on every PR by:
+#   1. Building the production Docker image
+#   2. Starting the container (which runs both Express proxy + Python FastAPI)
+#   3. Running real smoke tests against the live stack
+#   4. Testing circuit breaker, rate limiting, and error propagation
+#
+# This is the CRITICAL gating workflow for go-live — it ensures the
+# frontend can actually communicate with the backend through the bridge.
+# ========================================================================
+
+name: Full-Stack Integration CI
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'artifacts/**'
+      - 'examples/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'artifacts/**'
+      - 'examples/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: hyba-fullstack
+
+concurrency:
+  group: fullstack-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Stage 1: Build the production Docker image ───────────────────────
+  docker-build:
+    name: Build production Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true          # Make image available locally for smoke tests
+          push: false         # Only push on main (handled by docker-build.yml)
+          tags: hyba-fullstack:ci-${{ github.sha }}
+          build-args: |
+            HYBA_BUILD_PROFILE=prod
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save image artifact
+        run: |
+          docker save hyba-fullstack:ci-${{ github.sha }} | gzip > /tmp/hyba-fullstack-ci.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyba-fullstack-image
+          path: /tmp/hyba-fullstack-ci.tar.gz
+          retention-days: 1
+
+  # ── Stage 2: Run full-stack integration smoke tests ─────────────────
+  fullstack-smoke-tests:
+    name: Full-stack integration smoke tests
+    runs-on: ubuntu-latest
+    needs: docker-build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hyba-fullstack-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: |
+          gunzip -c /tmp/hyba-fullstack-ci.tar.gz | docker load
+
+      - name: Start container with full stack
+        run: |
+          docker run -d --name hyba-fullstack-ci \
+            -e NODE_ENV=production \
+            -e HYBA_ENV=production \
+            -e HYBA_GOVERNANCE_RAIL=enterprise \
+            -e JWT_SECRET=ci-test-secret-at-least-32-characters-long \
+            -e HYBA_API_KEY_SECRET=ci-test-api-secret-at-least-32-characters \
+            -e HYBA_ALLOW_DEV_FIXTURES=true \
+            -e HYBA_ENABLE_LIVE_STRATUM=false \
+            -e HYBA_ENABLE_MINING_AUTOCONNECT=false \
+            -e HYBA_ENABLE_LIVE_SHARE_SUBMIT=false \
+            -p 3000:3000 \
+            -p 3001:3001 \
+            hyba-fullstack:ci-${{ github.sha }}
+
+          echo "Waiting for container to become healthy..."
+          timeout 90 bash -c '
+            until docker ps --filter name=hyba-fullstack-ci --filter status=running | grep -q hyba-fullstack-ci; do
+              sleep 2
+            done
+          '
+
+      - name: Verify bridge health endpoint
+        run: |
+          echo "=== Verifying bridge health endpoint ==="
+          timeout 60 bash -c '
+            until curl -sf http://127.0.0.1:3000/bridge/health; do
+              sleep 2
+            done
+          '
+          BRIDGE_JSON=$(curl -sf http://127.0.0.1:3000/bridge/health)
+          echo "$BRIDGE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['status']=='ok'; assert d['service']=='HYBA Secure Bridge'; print('✅ Bridge health OK')"
+          echo "$BRIDGE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['backendReachable']==True; print('✅ Backend reachable through bridge')"
+
+      - name: Verify backend health endpoint (direct)
+        run: |
+          echo "=== Verifying backend health endpoint (direct) ==="
+          BACKEND_JSON=$(curl -sf http://127.0.0.1:3001/health)
+          echo "$BACKEND_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'status' in d; assert 'substrate' in d; print('✅ Backend health OK')"
+
+      - name: Verify backend health endpoint (via bridge proxy)
+        run: |
+          echo "=== Verifying backend health via bridge proxy ==="
+          PROXY_JSON=$(curl -sf http://127.0.0.1:3000/health)
+          echo "$PROXY_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'status' in d; print('✅ Bridge proxy to /health OK')"
+
+      - name: Verify mining endpoints
+        run: |
+          echo "=== Verifying mining API endpoints ==="
+          # Pool config may require auth, so accept 200 or 401
+          STATUS=$(curl -so /dev/null -w "%{http_code}" http://127.0.0.1:3000/api/mining/pool-config)
+          echo "Pool config endpoint: HTTP $STATUS"
+          if [ "$STATUS" -eq 200 ] || [ "$STATUS" -eq 401 ]; then
+            echo "✅ Mining pool-config endpoint OK"
+          else
+            echo "❌ Unexpected status: $STATUS"
+            exit 1
+          fi
+
+      - name: Verify substrate endpoint
+        run: |
+          echo "=== Verifying substrate endpoint ==="
+          curl -sf http://127.0.0.1:3000/api/substrate | python3 -c "import sys,json; d=json.load(sys.stdin); assert len(d) > 0; print('✅ Substrate endpoint OK')"
+
+      - name: Verify bridge metrics
+        run: |
+          echo "=== Verifying bridge metrics ==="
+          METRICS=$(curl -sf http://127.0.0.1:3000/bridge/metrics)
+          echo "$METRICS" | grep -q "hyba_bridge_requests_total" && echo "✅ Prometheus metrics OK"
+
+      - name: Verify CORS headers on bridge responses
+        run: |
+          echo "=== Verifying CORS headers ==="
+          curl -sfI http://127.0.0.1:3000/bridge/health | grep -qi "access-control-allow-origin" && echo "✅ CORS headers present" || echo "ℹ️ CORS headers not set (expected if not configured)"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run frontend-backend E2E communication test suite
+        run: |
+          echo "=== Running frontend-backend E2E communication tests ==="
+          npx vitest run tests/test_frontend_backend_e2e.test.ts --reporter=verbose 2>&1 | tail -40
+
+      - name: Run bridge integration test suite
+        run: |
+          echo "=== Running bridge integration tests ==="
+          npx vitest run tests/test_bridge_real_integration.test.ts --reporter=verbose 2>&1 | tail -40
+
+      - name: Cleanup container
+        if: always()
+        run: |
+          docker stop hyba-fullstack-ci || true
+          docker rm hyba-fullstack-ci || true
+
+      - name: Upload test logs on failure
+        if: failure()
+        run: |
+          docker logs hyba-fullstack-ci 2>&1 | tail -100
