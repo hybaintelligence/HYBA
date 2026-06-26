@@ -61,7 +61,7 @@
     "vitest": "^4.0.15"
   },
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=22.15.0"
   },
   "name": "hyba-fullstack",
   "private": true,
@@ -71,7 +71,7 @@
     "benchmark:ai-capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_ai_capability_benchmarks.py -q -s",
     "benchmark:capabilities": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_mining_capability_benchmarks.py tests/test_ai_capability_benchmarks.py -q -s",
     "benchmark:post-quantum": "npm run python:env:check && cross-env PYTHONPATH=python_backend python3 -m pytest tests/test_post_quantum_benchmark.py -v --tb=short -s",
-    "build": "VITE_BUILD_SYSTEM=rollup vite build --config vite.config.build.ts && npx esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.mjs",
+    "build": "cross-env VITE_BUILD_SYSTEM=rollup vite build --config vite.config.build.ts && npx esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.mjs",
     "build:ci": "npm run build",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "cloudflare:build": "npm run build",

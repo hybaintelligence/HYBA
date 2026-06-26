@@ -6,8 +6,11 @@ version: '3.8'
 
 services:
   backend:
-    # Pull from Docker Cloud instead of building locally
-    image: ${DOCKERHUB_USERNAME:-hyba-fullstack}/hyba-fullstack:latest
+    # Build locally if REGISTRY is empty, otherwise pull from Docker Cloud
+    image: ${REGISTRY:+${REGISTRY}/${DOCKERHUB_REPOSITORY:-${DOCKERHUB_USERNAME:-hyba-fullstack}/hyba-fullstack}:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: hyba-backend-local
     ports:
       - "3000:3000"  # Frontend bridge
