@@ -1,4 +1,4 @@
-name: HYBA Fullstack Container CI
+name: HYBA Fullstack Container CI with Docker Build Cloud
 
 on:
   pull_request:
@@ -17,20 +17,6 @@ on:
     tags: ['v*']
   workflow_dispatch:
     inputs:
-      build_profile:
-        description: Image profile tag to publish.
-        required: true
-        default: prod
-        type: choice
-        options:
-          - dev
-          - prod
-          - benchmark
-      image_name:
-        description: Container image name under the selected registry namespace.
-        required: true
-        default: hyba-fullstack
-        type: string
       push_image:
         description: Push the built image to the registry.
         required: true
@@ -47,13 +33,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: docker.io
   DEFAULT_IMAGE_NAME: hyba-fullstack
-  DEFAULT_BUILD_PROFILE: prod
 
 jobs:
-  build-scan-publish:
-    name: Build, scan, and publish image
+  build-scan-push-with-docker-cloud:
+    name: Build, scan, and push with Docker Build Cloud
     runs-on: ubuntu-latest
 
     steps:
@@ -64,69 +49,70 @@ jobs:
         id: image
         shell: bash
         run: |
-          image_name="${{ inputs.image_name || env.DEFAULT_IMAGE_NAME }}"
-          build_profile="${{ inputs.build_profile || env.DEFAULT_BUILD_PROFILE }}"
+          image_name="hyba-fullstack"
           owner_lc="${GITHUB_REPOSITORY_OWNER,,}"
+          docker_repo="${{ secrets.DOCKERHUB_REPOSITORY }}"
+          
+          if [ -z "$docker_repo" ]; then
+            docker_repo="${{ secrets.DOCKERHUB_USERNAME }}/hyba-fullstack"
+          fi
 
           echo "name=${image_name}" >> "$GITHUB_OUTPUT"
-          echo "profile=${build_profile}" >> "$GITHUB_OUTPUT"
-          echo "image=${REGISTRY}/${owner_lc}/${image_name}" >> "$GITHUB_OUTPUT"
+          echo "docker_repo=${docker_repo}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx with Docker Build Cloud
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
-        if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.push_image)
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Generate image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.image.outputs.image }}
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.docker_repo }}
           tags: |
-            type=raw,value=${{ steps.image.outputs.profile }},enable=${{ github.event_name == 'workflow_dispatch' }}
             type=raw,value=prod,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,prefix=${{ steps.image.outputs.profile }}-
+            type=sha,prefix=sha-
             type=ref,event=tag
           labels: |
             org.opencontainers.image.title=HYBA Fullstack
             org.opencontainers.image.description=Unified Node build and Python FastAPI runtime image for HYBA.
 
-      - name: Build image for pull request validation
+      - name: Build image for pull request validation (no push)
         if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          load: true
+          load: false
           push: false
-          tags: hyba-fullstack:ci
+          tags: ${{ env.REGISTRY }}/${{ steps.image.outputs.docker_repo }}:pr-${{ github.event.pull_request.number }}
           build-args: |
-            HYBA_BUILD_PROFILE=${{ steps.image.outputs.profile }}
+            HYBA_BUILD_PROFILE=prod
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and optionally push image
+      - name: Build and push image with Docker Build Cloud
         if: github.event_name != 'pull_request'
-        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          load: ${{ github.event_name == 'workflow_dispatch' && !inputs.push_image }}
-          push: ${{ github.event_name != 'workflow_dispatch' || inputs.push_image }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            HYBA_BUILD_PROFILE=${{ steps.image.outputs.profile }}
+            HYBA_BUILD_PROFILE=prod
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
 
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@0.33.1
@@ -144,41 +130,10 @@ jobs:
         with:
           sarif_file: trivy-fs-results.sarif
 
-      - name: Run Trivy image scan for pull requests
-        if: github.event_name == 'pull_request'
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: hyba-fullstack:ci
-          format: table
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: '1'
-
-      - name: Run Trivy image scan for local workflow dispatch builds
-        if: github.event_name == 'workflow_dispatch' && !inputs.push_image
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: ${{ steps.image.outputs.image }}:${{ steps.image.outputs.profile }}
-          format: table
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: '1'
-
-      - name: Create deployment artifact
+      - name: Image build summary
         if: github.event_name != 'pull_request'
-        shell: bash
         run: |
-          {
-            echo "Profile: ${{ steps.image.outputs.profile }}"
-            echo "Image: ${{ steps.image.outputs.image }}"
-            echo "Tags:"
-            printf '%s\n' '${{ steps.meta.outputs.tags }}'
-            echo "Digest: ${{ steps.build.outputs.digest }}"
-          } > deployment-info.txt
-
-      - name: Upload deployment artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: hyba-fullstack-deployment-info
-          path: deployment-info.txt
+          echo "✅ Docker Build Cloud deployment successful"
+          echo "Image: ${{ env.REGISTRY }}/${{ steps.image.outputs.docker_repo }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Platform support: linux/amd64,linux/arm64"

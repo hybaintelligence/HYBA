@@ -1,0 +1,21 @@
+{
+  "repository": "hybaintelligence/HYBA_Final",
+  "viabtc_connected": true,
+  "pools": [
+    {
+      "id": "VIABTC",
+      "url": "stratum+ssl://btc.viabtc.io:3333",
+      "username_redacted": "PY***1"
+    }
+  ],
+  "secrets_template": {
+    "DOCKERHUB_USERNAME": "<SET_ME>",
+    "DOCKERHUB_TOKEN": "<SET_ME>",
+    "JWT_SECRET": "T-HjQLuo5vC_FDIsH2WnlmrjCydl1n63x_2AwLxqeU8",
+    "HYBA_OPERATOR_CREDENTIALS": "operator:$argon2id$v=19$m=65536,t=3,p=4$evdwh5nzDeODqYfk51XwmA$cbGUMInUbNVnDLJ+h9unojYBVyl7mctrgqJTvCe/mI4:mining_operator",
+    "HYBA_POOL_VIABTC_URL": "stratum+ssl://btc.viabtc.io:3333",
+    "HYBA_POOL_VIABTC_USERNAME": "PYTHIA.001",
+    "HYBA_POOL_VIABTC_PASSWORD": "123"
+  },
+  "timestamp": 1782468625.9561875
+}

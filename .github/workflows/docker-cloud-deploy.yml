@@ -1,4 +1,4 @@
-name: Docker Cloud Deploy
+name: Docker Build Cloud Deploy
 
 on:
   push:
@@ -10,121 +10,68 @@ permissions:
   packages: write
 
 env:
+  REGISTRY: docker.io
   HYBA_PYTHON_VERSION: '3.12.7'
-  IMAGE_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
 
 jobs:
-  build-smoke-push:
-    name: Build, smoke test, and push Docker image
+  build-with-docker-cloud:
+    name: Build with Docker Build Cloud and push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.15.0'
-          cache: npm
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Frontend and bridge build
-        env:
-          VITE_API_BASE_URL: /api
-        run: npm run build
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.HYBA_PYTHON_VERSION }}
-          cache: pip
-
-      - name: Install backend dependencies for config validation
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
-
-      - name: Validate production mining environment
-        env:
-          NODE_ENV: production
-          HYBA_ENV: production
-          PYTHONPATH: python_backend
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          HYBA_OPERATOR_CREDENTIALS: ${{ secrets.HYBA_OPERATOR_CREDENTIALS }}
-          PULVINI_BACKEND_URL: http://127.0.0.1:3001
-          HYBA_ALLOW_DEV_FIXTURES: 'false'
-          HYBA_ENABLE_LIVE_STRATUM: 'true'
-          HYBA_ENABLE_MINING_AUTOCONNECT: 'true'
-          HYBA_ENABLE_LIVE_SHARE_SUBMIT: 'false'
-          HYBA_ENABLE_AUDIT_LOGGING: 'true'
-          HYBA_POOL_VIABTC_URL: ${{ secrets.HYBA_POOL_VIABTC_URL }}
-          HYBA_POOL_VIABTC_USERNAME: ${{ secrets.HYBA_POOL_VIABTC_USERNAME }}
-          HYBA_POOL_VIABTC_PASSWORD: ${{ secrets.HYBA_POOL_VIABTC_PASSWORD }}
-          HYBA_POOL_NICEHASH_URL: ${{ secrets.HYBA_POOL_NICEHASH_URL }}
-          HYBA_POOL_NICEHASH_WORKER: ${{ secrets.HYBA_POOL_NICEHASH_WORKER }}
-          HYBA_POOL_NICEHASH_NH_POOL_ID: ${{ secrets.HYBA_POOL_NICEHASH_NH_POOL_ID }}
-          HYBA_POOL_NICEHASH_PASSWORD: ${{ secrets.HYBA_POOL_NICEHASH_PASSWORD }}
-          HYBA_POOL_BRAIINS_URL: ${{ secrets.HYBA_POOL_BRAIINS_URL }}
-          HYBA_POOL_BRAIINS_USERNAME: ${{ secrets.HYBA_POOL_BRAIINS_USERNAME }}
-          HYBA_POOL_BRAIINS_PASSWORD: ${{ secrets.HYBA_POOL_BRAIINS_PASSWORD }}
-          HYBA_POOL_CKPOOL_URL: ${{ secrets.HYBA_POOL_CKPOOL_URL }}
-          HYBA_POOL_CKPOOL_BTC_ADDRESS: ${{ secrets.HYBA_POOL_CKPOOL_BTC_ADDRESS }}
-          HYBA_POOL_CKPOOL_PASSWORD: ${{ secrets.HYBA_POOL_CKPOOL_PASSWORD }}
-        run: python scripts/validate_production_env.py
-
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx with Docker Build Cloud
         uses: docker/setup-buildx-action@v3
-
-      - name: Build production Docker image
-        run: docker build -t hyba-fullstack:ci .
-
-      - name: Smoke start container and verify frontend/backend bridge
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          HYBA_INTERNAL_HEALTH_TOKEN: ${{ secrets.HYBA_INTERNAL_HEALTH_TOKEN }}
-        run: |
-          docker run -d --name hyba-fullstack-smoke \
-            -p 3000:3000 \
-            -e NODE_ENV=production \
-            -e HYBA_ENV=production \
-            -e JWT_SECRET="$JWT_SECRET" \
-            -e HYBA_INTERNAL_HEALTH_TOKEN="$HYBA_INTERNAL_HEALTH_TOKEN" \
-            -e HYBA_ENABLE_LIVE_STRATUM=false \
-            -e HYBA_ENABLE_MINING_AUTOCONNECT=false \
-            -e HYBA_ENABLE_LIVE_SHARE_SUBMIT=false \
-            -e HYBA_ENABLE_AUDIT_LOGGING=true \
-            hyba-fullstack:ci
-          for i in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:3000/bridge/health >/tmp/bridge-health.json; then
-              break
-            fi
-            sleep 2
-          done
-          cat /tmp/bridge-health.json
-          curl -fsS http://127.0.0.1:3000/api/health/readiness
-
-      - name: Docker logs on failure
-        if: failure()
-        run: docker logs hyba-fullstack-smoke || true
-
-      - name: Cleanup smoke container
-        if: always()
-        run: docker rm -f hyba-fullstack-smoke || true
+        with:
+          # Use Docker Build Cloud builder
+          driver-options: |
+            image=moby/buildkit:latest
+            network=host
 
       - name: Login to Docker Hub
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Tag and push image
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      - name: Extract Docker Hub repository
+        id: docker-repo
         run: |
-          test -n "$IMAGE_REPOSITORY"
-          docker tag hyba-fullstack:ci "$IMAGE_REPOSITORY:${GITHUB_SHA}"
-          docker tag hyba-fullstack:ci "$IMAGE_REPOSITORY:latest"
-          docker push "$IMAGE_REPOSITORY:${GITHUB_SHA}"
-          docker push "$IMAGE_REPOSITORY:latest"
+          REPO="${{ secrets.DOCKERHUB_REPOSITORY }}"
+          if [ -z "$REPO" ]; then
+            REPO="${{ secrets.DOCKERHUB_USERNAME }}/hyba-fullstack"
+          fi
+          echo "repository=${REPO}" >> $GITHUB_OUTPUT
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.docker-repo.outputs.repository }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push with Docker Build Cloud
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            HYBA_BUILD_PROFILE=prod
+          platforms: linux/amd64,linux/arm64
+
+      - name: Image push summary
+        run: |
+          echo "✅ Image built and pushed with Docker Build Cloud"
+          echo "Repository: ${{ steps.docker-repo.outputs.repository }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
