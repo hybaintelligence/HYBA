@@ -489,25 +489,6 @@ print(f"Memory sealed: {memory_pack.sealed_evidence_chain[:16]}...")
 ```
 
 **Transfer** (export packet as JSON):
-```python
-packet_json = json.dumps(memory_pack.__dict__, default=str)
-# Write to disk, email, USB drive, etc.
-```
-
-**Laptop B (Ubuntu, import memory)**:
-```python
-from sovereign_node import SovereignNode
-
-node_b = SovereignNode(
-    node_id="reviewer_ubuntu",
-    os_platform="linux",
-    python_version="3.11.7",
-)
-assert node_b.verify_sovereignty_gate()
-
-# Import the sealed memory
-reconstructed = node_b.import_sealed_memory(memory_pack)
-assert reconstructed["solution_hash"] == "abc123def456"
 assert reconstructed["resonance_stability"] == 0.87
 
 print(f"✅ Memory successfully ported from macOS to Ubuntu")
