@@ -1,0 +1,39 @@
+import React from 'react';
+
+export interface TabsProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export interface TabsListProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export interface TabsTriggerProps {
+  children: React.ReactNode;
+  value?: string;
+  className?: string;
+}
+
+export interface TabsContentProps {
+  children: React.ReactNode;
+  value?: string;
+  className?: string;
+}
+
+export const Tabs: React.FC<TabsProps> = ({ children, className }) => (
+  <div className={className}>{children}</div>
+);
+
+export const TabsList: React.FC<TabsListProps> = ({ children, className }) => (
+  <div className={className}>{children}</div>
+);
+
+export const TabsTrigger: React.FC<TabsTriggerProps> = ({ children, className }) => (
+  <button className={className}>{children}</button>
+);
+
+export const TabsContent: React.FC<TabsContentProps> = ({ children, className }) => (
+  <div className={className}>{children}</div>
+);
