@@ -20,7 +20,8 @@
  *   HYBA_ALLOW_DEV_INTERNAL_ROUTES    Allow internal routes without token (dev only, default false)
  *   HYBA_SWARM_HEARTBEAT_INTERVAL_MS  Security swarm heartbeat (default 3000ms, was 100ms)
  *   HYBA_PROXY_BODY_SIZE_LIMIT        Max body size for proxied routes (default 10MB, returns 413)
- *   HYBA_ENABLE_MINING_AUTOCONNECT    Auto-connect to ViaBTC on startup (default false)
+ *   HYBA_ENABLE_MINING_AUTOCONNECT    Auto-connect configured pool on startup (default false)
+ *   HYBA_MINING_AUTO_POOL_ID           Preferred auto-connect pool: viabtc, nicehash, braiins, or ckpool
  *   HYBA_INTERNAL_HEALTH_TOKEN        Token for /bridge/internal/* routes
  *   JWT_SECRET                        Required in production; auto-generated dev fallback
  *   PULVINI_BACKEND_URL               FastAPI backend URL (default http://127.0.0.1:3001)
@@ -346,24 +347,72 @@ function enforceTenantBilling(req: Request, res: Response, next: NextFunction): 
   next();
 }
 
+type MiningAutoConnectPayload = {
+  pool_id: "viabtc" | "nicehash" | "braiins" | "ckpool";
+  worker?: string;
+  username?: string;
+  btc_address?: string;
+  password?: string;
+  nicehash_pool_id?: string;
+  capacity_ehs: number;
+};
+
+function resolveMiningAutoConnectPayload(): MiningAutoConnectPayload | null {
+  const capacity = Number(process.env.HYBA_QUANTUM_CAPACITY_EHS) || 1.0;
+  const preferred = (process.env.HYBA_MINING_AUTO_POOL_ID || "").trim().toLowerCase();
+  const candidates: MiningAutoConnectPayload[] = [];
+
+  if (process.env.HYBA_POOL_VIABTC_USERNAME && process.env.HYBA_POOL_VIABTC_PASSWORD) {
+    candidates.push({
+      pool_id: "viabtc",
+      worker: process.env.HYBA_POOL_VIABTC_USERNAME,
+      password: process.env.HYBA_POOL_VIABTC_PASSWORD,
+      capacity_ehs: capacity,
+    });
+  }
+  const nicehashPoolId =
+    process.env.HYBA_POOL_NICEHASH_NH_POOL_ID || process.env.HYBA_POOL_NICEHASH_NICEHASH_POOL_ID;
+  if (process.env.HYBA_POOL_NICEHASH_WORKER && nicehashPoolId) {
+    candidates.push({
+      pool_id: "nicehash",
+      worker: process.env.HYBA_POOL_NICEHASH_WORKER,
+      password: process.env.HYBA_POOL_NICEHASH_PASSWORD || "x",
+      nicehash_pool_id: nicehashPoolId,
+      capacity_ehs: capacity,
+    });
+  }
+  if (process.env.HYBA_POOL_BRAIINS_USERNAME && process.env.HYBA_POOL_BRAIINS_PASSWORD) {
+    candidates.push({
+      pool_id: "braiins",
+      worker: process.env.HYBA_POOL_BRAIINS_USERNAME,
+      password: process.env.HYBA_POOL_BRAIINS_PASSWORD,
+      capacity_ehs: capacity,
+    });
+  }
+  if (process.env.HYBA_POOL_CKPOOL_BTC_ADDRESS) {
+    candidates.push({
+      pool_id: "ckpool",
+      worker: process.env.HYBA_POOL_CKPOOL_BTC_ADDRESS,
+      btc_address: process.env.HYBA_POOL_CKPOOL_BTC_ADDRESS,
+      password: process.env.HYBA_POOL_CKPOOL_PASSWORD || "x",
+      capacity_ehs: capacity,
+    });
+  }
+
+  return candidates.find((candidate) => candidate.pool_id === preferred) || candidates[0] || null;
+}
+
 async function autoConnectViaBTC(): Promise<void> {
   if (!CONFIG.enableMiningAutoConnect) {
     logger.info("Mining auto-connect disabled — explicit MIDAS/operator connect required");
     return;
   }
-  const poolId = process.env.HYBA_POOL_VIABTC_USERNAME ? "viabtc" : null;
-  if (!poolId) {
-    logger.info("No mining pool configured — skipping auto-connect");
+  const payload = resolveMiningAutoConnectPayload();
+  if (!payload) {
+    logger.info("No complete mining pool auto-connect profile configured — skipping auto-connect");
     return;
   }
   try {
-    const worker = process.env.HYBA_POOL_VIABTC_USERNAME || "PYTHIA.001";
-    const password = process.env.HYBA_POOL_VIABTC_PASSWORD;
-    if (!password) {
-      logger.warn("ViaBTC auto-connect skipped because HYBA_POOL_VIABTC_PASSWORD is not set");
-      return;
-    }
-    const capacity = Number(process.env.HYBA_QUANTUM_CAPACITY_EHS) || 1.0;
     const url = new URL("/api/mining/connect", CONFIG.backendUrl);
     const token = createInternalMiningJwt();
     if (!token) {
@@ -373,16 +422,16 @@ async function autoConnectViaBTC(): Promise<void> {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ pool_id: poolId, worker, password, capacity_ehs: capacity }),
+      body: JSON.stringify(payload),
     });
     if (response.ok) {
       const result = (await response.json()) as { pool?: string };
       logger.info(
-        { pool: result.pool, worker, capacity_ehs: capacity },
+        { pool: result.pool, pool_id: payload.pool_id, capacity_ehs: payload.capacity_ehs },
         "✅ Auto-connected to mining pool",
       );
     } else {
-      logger.warn({ status: response.status }, "Auto-connect to mining pool failed");
+      logger.warn({ status: response.status, pool_id: payload.pool_id }, "Auto-connect to mining pool failed");
     }
   } catch (error: unknown) {
     logger.warn(
