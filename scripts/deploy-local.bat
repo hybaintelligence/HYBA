@@ -63,11 +63,22 @@ if not exist config\grafana-datasources.yml (
     ) > config\grafana-datasources.yml
 )
 
+set "COMPOSE_CMD=docker-compose"
+docker-compose version >nul 2>&1
+if %errorlevel% neq 0 (
+    docker compose version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo Error: Docker Compose is not installed. Please install it and try again.
+        exit /b 1
+    )
+    set "COMPOSE_CMD=docker compose"
+)
+
 echo Pulling Docker image from Docker Cloud...
-docker-compose -f docker-compose.local.yml pull
+%COMPOSE_CMD% -f docker-compose.local.yml pull
 
 echo Starting services...
-docker-compose -f docker-compose.local.yml up -d
+%COMPOSE_CMD% -f docker-compose.local.yml up -d
 
 echo.
 echo ==========================================
