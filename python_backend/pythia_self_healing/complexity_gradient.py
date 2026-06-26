@@ -89,6 +89,60 @@ def detect_phase_transition(measurements: List[Mapping[str, object]]) -> Dict[st
     }
 
 
+def sweep_complexity(memory_depth_range: range = range(1, 21)) -> List[Dict[str, object]]:
+    """Generate a continuous complexity sweep over memory_depth.
+
+    Returns a denser sampling of the complexity gradient for criticality
+    analysis, using the same deterministic score_profile function.
+    """
+    measurements: List[Dict[str, object]] = []
+    for depth in memory_depth_range:
+        profile = {
+            "profile_id": f"depth_{depth}",
+            "memory_depth": depth,
+            "graph_density": round(min(0.05 * depth, 0.95), 2),
+            "constraint_count": min(depth, 10),
+            "feedback_history": max(0, depth - 1),
+        }
+        measurements.append({**profile, **score_profile(profile)})
+    return measurements
+
+
+def find_criticality_threshold(
+    measurements: List[Mapping[str, object]],
+) -> Dict[str, object]:
+    """Find the memory_depth where emergence_index changes fastest.
+
+    Uses a discrete second-difference approximation to locate the point of
+    maximum curvature in the emergence response. Returns the depth at which
+    the emergence_index jumps most per unit of added complexity.
+    """
+    entries = sorted(measurements, key=lambda r: int(str(r.get("memory_depth", 0))))
+    if len(entries) < 3:
+        return {"criticality_threshold_at_depth": 0, "maximum_emergence_jump": 0.0, "detected": False}
+
+    max_jump = 0.0
+    threshold_depth = int(entries[0]["memory_depth"])
+    threshold_index = 0.0
+
+    for i in range(2, len(entries)):
+        first_deriv_prev = float(entries[i - 1]["emergence_index"]) - float(entries[i - 2]["emergence_index"])
+        first_deriv_curr = float(entries[i]["emergence_index"]) - float(entries[i - 1]["emergence_index"])
+        second_deriv = first_deriv_curr - first_deriv_prev
+        # The point of maximum curvature is where second derivative peaks
+        if abs(second_deriv) > abs(max_jump):
+            max_jump = second_deriv
+            threshold_depth = int(entries[i - 1]["memory_depth"])
+            threshold_index = float(entries[i - 1]["emergence_index"])
+
+    return {
+        "criticality_threshold_at_depth": threshold_depth,
+        "emergence_index_at_threshold": round(threshold_index, 6),
+        "maximum_second_derivative": round(max_jump, 6),
+        "detected": abs(max_jump) >= 0.01,
+    }
+
+
 def make_complexity_packet(
     *,
     git_commit_hash: str = "first-sealed-runtime-experiment-v1",
@@ -99,6 +153,8 @@ def make_complexity_packet(
 
     profiles = run_complexity_gradient()
     phase_transition = detect_phase_transition(profiles)
+    sweep = sweep_complexity()
+    criticality = find_criticality_threshold(sweep)
     packet: Dict[str, object] = {
         "schema": "HYBA_COMPLEXITY_GRADIENT_PACKET_V1",
         "programme": "emergence_complexity_curve",
@@ -107,6 +163,8 @@ def make_complexity_packet(
         "parent_cycle_id": parent_cycle_id,
         "profiles": profiles,
         "phase_transition": phase_transition,
+        "criticality_analysis": criticality,
+        "continuous_sweep": sweep,
         "falsifier_result": "not_falsified" if phase_transition["detected"] else "falsified",
     }
     packet["artifact_seal"] = seal_packet(packet)

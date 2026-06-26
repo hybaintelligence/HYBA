@@ -45,10 +45,10 @@ from pythia_mining.redis_state_registry import get_redis_registry
 from pythia_mining.autonomous_qaas_controller import create_autonomous_controller
 
 router = APIRouter(
-    prefix="/api/admin/fault-tolerant-computers", tags=["quantum-as-a-service-admin"]
+    prefix="/api/admin/virtual-fault-tolerant-computers", tags=["quantum-as-a-service-admin"]
 )
 public_router = APIRouter(
-    prefix="/api/v1/fault-tolerant-computers", tags=["quantum-as-a-service"]
+    prefix="/api/v1/virtual-fault-tolerant-computers", tags=["quantum-as-a-service"]
 )
 
 ComputerState = Literal["provisioned", "running", "stopped"]

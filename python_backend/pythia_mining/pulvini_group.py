@@ -79,19 +79,26 @@ def compute_graph_automorphisms(
     automorphisms: List[Tuple[int, ...]] = []
     _budget: List[int] = [int(node_budget) if node_budget is not None else 500_000]
 
+    def is_valid_extension(source: int, target: int) -> bool:
+        """Check if mapping source->target is consistent with edges already mapped."""
+        # For each already-mapped node, check if the edge relationship is preserved
+        for mapped_source, mapped_target in mapping.items():
+            # If source and mapped_source are adjacent, target and mapped_target must be adjacent
+            if mapped_source in neighbors[source]:
+                if mapped_target not in neighbors[target]:
+                    return False
+            # If source and mapped_source are NOT adjacent, target and mapped_target must NOT be adjacent
+            else:
+                if mapped_target in neighbors[target]:
+                    return False
+        return True
+
     def feasible_targets(source: int) -> List[int]:
         result = []
         for target in candidates[source]:
             if target in used:
                 continue
-            ok = True
-            for mapped_source, mapped_target in mapping.items():
-                if (mapped_source in neighbors[source]) != (
-                    mapped_target in neighbors[target]
-                ):
-                    ok = False
-                    break
-            if ok:
+            if is_valid_extension(source, target):
                 result.append(target)
         return result
 
@@ -122,7 +129,13 @@ def compute_graph_automorphisms(
             automorphisms.append(tuple(mapping[i] for i in nodes))
             return
         source, targets = choose_source()
-        if source is None or not targets:
+        if source is None:
+            # All nodes mapped and no contradiction found — we have an automorphism
+            if len(mapping) == len(nodes):
+                automorphisms.append(tuple(mapping[i] for i in nodes))
+            return
+        if not targets:
+            # No valid targets for this source — backtrack
             return
         for target in targets:
             mapping[source] = target

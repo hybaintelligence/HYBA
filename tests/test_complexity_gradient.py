@@ -72,3 +72,26 @@ def test_mutation_invalidates_complexity_packet_seal():
         assert "seal mismatch" in str(exc)
     else:
         raise AssertionError("mutated complexity packet should fail seal validation")
+
+
+def test_criticality_threshold_found_interior():
+    module = load_module()
+    sweep = module.sweep_complexity(range(1, 11))
+    result = module.find_criticality_threshold(sweep)
+
+    assert result["detected"] is True
+    depth = result["criticality_threshold_at_depth"]
+    assert 2 <= depth <= 9, f"Threshold depth must be interior of 1..10, got {depth}"
+
+
+def test_criticality_threshold_is_robust_to_window_shift():
+    module = load_module()
+    baseline = module.find_criticality_threshold(module.sweep_complexity(range(1, 11)))
+    shifted = module.find_criticality_threshold(module.sweep_complexity(range(2, 12)))
+
+    # Robustness property: the criticality point is a property of the curve,
+    # not of the sampling window, so it should not shift merely because we
+    # slide the observable window by one unit.
+    assert shifted["criticality_threshold_at_depth"] == baseline["criticality_threshold_at_depth"]
+    assert shifted["detected"] is True
+
