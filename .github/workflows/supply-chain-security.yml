@@ -29,7 +29,7 @@ jobs:
       - name: Python dependency audit (HIGH+)
         run: |
           python -m pip install --upgrade pip pip-audit
-          pip-audit -r python_backend/requirements.txt --severity HIGH
+          pip-audit -r python_backend/hyba_genesis_api/requirements.txt --severity HIGH
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

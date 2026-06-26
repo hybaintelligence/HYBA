@@ -52,7 +52,7 @@ Feedback detection alone does not prove learning or open-ended improvement. Runt
 
 Use as evidence of feedback instrumentation and feedback-pattern presence only.
 
-**Status:** `implemented`, `tested`, `artifact-backed`, `baseline-needed`, `runtime-needed`
+**Status:** `implemented`, `tested`, `artifact-backed`, `baseline-needed`
 
 ---
 

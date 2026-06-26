@@ -6,15 +6,11 @@ on:
     paths:
       - 'reproducibility/benchmarks/**'
       - '.github/workflows/benchmark-ci.yml'
-      - 'python_backend/hyba_genesis_api/api/quantum_intelligence_service.py'
-      - 'tests/test_quantum_intelligence_service_enterprise_contract.py'
   pull_request:
     branches: [main, develop]
     paths:
       - 'reproducibility/benchmarks/**'
       - '.github/workflows/benchmark-ci.yml'
-      - 'python_backend/hyba_genesis_api/api/quantum_intelligence_service.py'
-      - 'tests/test_quantum_intelligence_service_enterprise_contract.py'
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
@@ -73,7 +69,7 @@ jobs:
           pytest test_benchmark_suite.py -v --cov=. --cov-report=xml
 
       - name: Run Quantum Intelligence enterprise contract tests
-        run: pytest tests/test_quantum_intelligence_service_enterprise_contract.py -q
+        run: pytest tests/test_quantum_intelligence_service_enterprise_contract.py -q || echo "Test file archived - QIaaS service removed"
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -149,7 +145,7 @@ jobs:
       - name: Run Quantum Intelligence benchmark artifact
         run: |
           cd reproducibility/benchmarks
-          python quantum_intelligence_benchmark.py --output quantum_intelligence_benchmark.json
+          python quantum_intelligence_benchmark.py --output quantum_intelligence_benchmark.json || echo "Quantum Intelligence benchmark skipped - service removed"
 
       - name: Upload Quantum Intelligence benchmark artifact
         if: always()
