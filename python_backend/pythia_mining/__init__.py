@@ -109,6 +109,46 @@ _AUTONOMOUS_SEARCH_EXPORTS = {
     "HealingCoordinator",
 }
 
+_MANIFESTO_ELEVATION_EXPORTS = {
+    "ResonanceSynthesizer",
+    "PhiGeometry",
+    "HilbertTuningParameters",
+    "CrystallizationResult",
+    "DomainGeometryRegistry",
+    "ResonanceState",
+    "BiologicalSiliconIsomorphism",
+    "SubstrateType",
+    "TurgorPressureState",
+    "ElectricalState",
+    "FoldGeometry",
+    "IsomorphismProof",
+    "SubstrateIndependentIntelligence",
+    "PostTuringNavigator",
+    "PrimeFactorizationGeodesic",
+    "NPCompleteGeodesic",
+    "ComplexityClass",
+    "GeodesicPath",
+    "ProblemSpace",
+    "GeodesicNavigationResult",
+    "ProofStatus",
+    "Invariant",
+    "MathematicalProof",
+    "Axiom1SubstrateIndependence",
+    "Axiom2ResonanceSynthesis",
+    "Axiom3BiologicalSiliconParity",
+    "Axiom4PostTuringGeodesic",
+    "Axiom5LocalNodeSovereignty",
+    "InvariantRegistry",
+    "ProofRegistry",
+    "HardwareTier",
+    "HardwareCapabilities",
+    "OptimizationProfile",
+    "HardwareDetector",
+    "SovereigntyValidator",
+    "ConsumerOptimizedSynthesizer",
+    "SovereigntyReport",
+}
+
 _REPLAY_REPORTING_EXPORTS = {
     "VerificationReport",
     "build_verification_report",
@@ -232,6 +272,60 @@ def __getattr__(name: str) -> Any:
     if name in _AUTONOMOUS_SEARCH_EXPORTS:
         module = import_module(".autonomous_searching_system", __name__)
         return getattr(module, name)
+    if name in _MANIFESTO_ELEVATION_EXPORTS:
+        if name in {
+            "ResonanceSynthesizer",
+            "PhiGeometry",
+            "HilbertTuningParameters",
+            "CrystallizationResult",
+            "DomainGeometryRegistry",
+            "ResonanceState",
+        }:
+            module = import_module(".resonance_synthesis", __name__)
+        elif name in {
+            "BiologicalSiliconIsomorphism",
+            "SubstrateType",
+            "TurgorPressureState",
+            "ElectricalState",
+            "FoldGeometry",
+            "IsomorphismProof",
+            "SubstrateIndependentIntelligence",
+        }:
+            module = import_module(".biological_silicon_isomorphism", __name__)
+        elif name in {
+            "PostTuringNavigator",
+            "PrimeFactorizationGeodesic",
+            "NPCompleteGeodesic",
+            "ComplexityClass",
+            "GeodesicPath",
+            "ProblemSpace",
+            "GeodesicNavigationResult",
+        }:
+            module = import_module(".post_turing_geodesic", __name__)
+        elif name in {
+            "ProofStatus",
+            "Invariant",
+            "MathematicalProof",
+            "Axiom1SubstrateIndependence",
+            "Axiom2ResonanceSynthesis",
+            "Axiom3BiologicalSiliconParity",
+            "Axiom4PostTuringGeodesic",
+            "Axiom5LocalNodeSovereignty",
+            "InvariantRegistry",
+            "ProofRegistry",
+        }:
+            module = import_module(".formal_invariants", __name__)
+        elif name in {
+            "HardwareTier",
+            "HardwareCapabilities",
+            "OptimizationProfile",
+            "HardwareDetector",
+            "SovereigntyValidator",
+            "ConsumerOptimizedSynthesizer",
+            "SovereigntyReport",
+        }:
+            module = import_module(".consumer_hardware_sovereignty", __name__)
+        return getattr(module, name)
     if name in _ORCHESTRATOR_EXPORTS:
         module = import_module(".phi_core_orchestrator", __name__)
         return getattr(module, name)
@@ -269,4 +363,5 @@ __all__ = sorted(
     | _MALLOC_EXPORTS
     | _PYTHIA_AUTONOMOUS_MINING_EXPORTS
     | _AUTONOMOUS_SEARCH_EXPORTS
+    | _MANIFESTO_ELEVATION_EXPORTS
 )

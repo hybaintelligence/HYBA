@@ -95,7 +95,7 @@ class AgentExecutionResult(BaseModel):
     task_id: str
     agent_id: str
     status: str
-    result: Dict[str, Any]
+    result: Optional[Dict[str, Any]] = None
     evidence: Dict[str, Any]
     token_optimization_applied: bool
     tokens_saved: Optional[int] = None
@@ -146,8 +146,8 @@ class TokenOptimizationEngine:
             compressed = self._pulvini_compress_context(compressed, config)
         
         optimized_tokens = self._estimate_tokens(compressed)
-        tokens_saved = original_tokens - optimized_tokens
-        compression_ratio = optimized_tokens / max(1, original_tokens)
+        tokens_saved = max(0, original_tokens - optimized_tokens)
+        compression_ratio = min(1.0, optimized_tokens / max(1, original_tokens))
         
         result = {
             "optimized_prompt": compressed,
@@ -268,21 +268,29 @@ class GPUScalingCoordinator:
                 "gpu_id": None
             }
         
+        # Enforce max_gpus limit - release oldest if at capacity
+        effective_max = min(config.max_gpus, self.max_gpus)
+        if len(self.active_gpus) >= effective_max:
+            # Release oldest task
+            oldest_task = min(self.active_gpus.keys(), 
+                           key=lambda k: self.active_gpus[k]["allocated_at"])
+            del self.active_gpus[oldest_task]
+        
         # Simple round-robin allocation
-        gpu_id = f"gpu_{self.load_balancer_index % min(config.max_gpus, self.max_gpus)}"
+        gpu_id = f"gpu_{self.load_balancer_index % effective_max}"
         self.load_balancer_index += 1
         
         self.active_gpus[task_id] = {
             "gpu_id": gpu_id,
             "allocated_at": datetime.now(timezone.utc).isoformat(),
-            "config": config.dict()
+            "config": config.model_dump()
         }
         
         return {
             "gpu_allocated": True,
             "strategy": config.load_balancing_strategy,
             "gpu_id": gpu_id,
-            "max_gpus": min(config.max_gpus, self.max_gpus)
+            "max_gpus": effective_max
         }
     
     def release_gpu(self, task_id: str) -> None:

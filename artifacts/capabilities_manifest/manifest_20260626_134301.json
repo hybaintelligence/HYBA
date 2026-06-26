@@ -1,0 +1,356 @@
+{
+  "suite": "PYTHIA Capabilities Manifest",
+  "version": "1.0.0",
+  "ts": "2026-06-26T12:42:27.390110+00:00",
+  "env": {
+    "numpy": "2.4.6",
+    "python": "3.11.7 (tags/v3.11.7:fa7a6f2, Dec  4 2023, 19:24:49) [MSC v.1937 64 bit (AMD64)]",
+    "phi": 1.618033988749895,
+    "phi_inv": 0.6180339887498948,
+    "platform": "win32"
+  },
+  "results": [
+    {
+      "test_id": "a1_substrate",
+      "intel_type": "IntelligenceType.FORMAL_INVARIANT",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": false,
+      "z_score": -10.0,
+      "p_value": 0.0,
+      "effect_size": -1.570796,
+      "sample_size": 100,
+      "artifact_hash": "0bbb0e9e0aeb88bfda24dfeadda35b40b371be2176955f5764f863a14d848370",
+      "timestamp": "2026-06-26T12:42:28.119805+00:00",
+      "metadata": {
+        "passed": 0,
+        "n": 100
+      }
+    },
+    {
+      "test_id": "a2_resonance",
+      "intel_type": "IntelligenceType.RESONANCE",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": true,
+      "z_score": 10.0,
+      "p_value": 0.0,
+      "effect_size": 1.0,
+      "sample_size": 100,
+      "artifact_hash": "390f29d3cefb902f4ef8ebf33cb89ef03118dea2f5657ec27602338696db2c2e",
+      "timestamp": "2026-06-26T12:42:28.120821+00:00",
+      "metadata": {
+        "claim": "T_crystallize(G,D)=O(1) constant-time",
+        "n": 100
+      }
+    },
+    {
+      "test_id": "a3_bio_silicon",
+      "intel_type": "IntelligenceType.BIO_SILICON_PARITY",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": false,
+      "z_score": -7.071068,
+      "p_value": 0.0,
+      "effect_size": -1.570796,
+      "sample_size": 50,
+      "artifact_hash": "f6b47abc7828c334b8092e0a492b2a05fc485fedfcf966c59d034efe3394158b",
+      "timestamp": "2026-06-26T12:42:28.125650+00:00",
+      "metadata": {
+        "passed": 0,
+        "mean_err": 0.6939136202744165
+      }
+    },
+    {
+      "test_id": "a4_geodesic",
+      "intel_type": "IntelligenceType.POST_TURING",
+      "con_level": "ConsciousnessLevel.C2_MEMORY",
+      "passed": true,
+      "z_score": 5.477226,
+      "p_value": 4.33e-08,
+      "effect_size": 1.570796,
+      "sample_size": 30,
+      "artifact_hash": "d5801fd41203eeab32fb40335c47fce04361491b37c430b186035ef61dc3ad9a",
+      "timestamp": "2026-06-26T12:42:28.143126+00:00",
+      "metadata": {
+        "passed": 30,
+        "n": 30
+      }
+    },
+    {
+      "test_id": "a5_sovereignty",
+      "intel_type": "IntelligenceType.SOVEREIGNTY",
+      "con_level": "ConsciousnessLevel.C2_MEMORY",
+      "passed": false,
+      "z_score": -10.0,
+      "p_value": 0.0,
+      "effect_size": -1.570796,
+      "sample_size": 100,
+      "artifact_hash": "8f77397b08c65e2d1bebfdb88db1889847217e9de9bd7d0efa8c3981a3dc5b4a",
+      "timestamp": "2026-06-26T12:42:28.157029+00:00",
+      "metadata": {
+        "passed": 0,
+        "n": 100
+      }
+    },
+    {
+      "test_id": "b1_pulvini",
+      "intel_type": "IntelligenceType.PULVINI",
+      "con_level": "ConsciousnessLevel.C2_MEMORY",
+      "passed": "True",
+      "z_score": 7.071068,
+      "p_value": 0.0,
+      "effect_size": 1.570796,
+      "sample_size": 50,
+      "artifact_hash": "08e19a0d33f585ddf0cecfdc3adfb42d0ce21bafba187d588c230f0ea3e5f88e",
+      "timestamp": "2026-06-26T12:42:28.187307+00:00",
+      "metadata": {
+        "passed": 50,
+        "mean_err": 1.3782756109371466e-16,
+        "compression": "32->16"
+      }
+    },
+    {
+      "test_id": "b2_consciousness",
+      "intel_type": "IntelligenceType.CONSCIOUSNESS",
+      "con_level": "ConsciousnessLevel.C3_SELF_STATE",
+      "passed": true,
+      "z_score": 5.477226,
+      "p_value": 4.33e-08,
+      "effect_size": 1.570796,
+      "sample_size": 30,
+      "artifact_hash": "3122f9ee38cd8523a82f7ce21902cf3c2ed6f196b653c13b6f268ccf23d03308",
+      "timestamp": "2026-06-26T12:42:28.213873+00:00",
+      "metadata": {
+        "mean_phi_density": 0.5353860581696251,
+        "passed": 30
+      }
+    },
+    {
+      "test_id": "b3_autonomous",
+      "intel_type": "IntelligenceType.AUTONOMOUS",
+      "con_level": "ConsciousnessLevel.C3_SELF_STATE",
+      "passed": true,
+      "z_score": 5.311622,
+      "p_value": 1.089e-07,
+      "effect_size": 0.483588,
+      "sample_size": 100,
+      "artifact_hash": "c569e7ae6120b0f1f432a17785ff727423017bc43deba688d5f5afaa1d133585",
+      "timestamp": "2026-06-26T12:42:29.377100+00:00",
+      "metadata": {
+        "passed": 48,
+        "n": 100
+      }
+    },
+    {
+      "test_id": "b4_causal",
+      "intel_type": "IntelligenceType.CAUSAL",
+      "con_level": "ConsciousnessLevel.C4_COUNTERFACTUAL",
+      "passed": true,
+      "z_score": 5.112077,
+      "p_value": 3.192e-07,
+      "effect_size": 1.203588,
+      "sample_size": 30,
+      "artifact_hash": "bf9d5741ede5bf11db4fe1ca587047f619570004a0be656a1ebade6db9bee662",
+      "timestamp": "2026-06-26T12:42:29.433361+00:00",
+      "metadata": {
+        "passed": 29,
+        "n": 30
+      }
+    },
+    {
+      "test_id": "b5_topology",
+      "intel_type": "IntelligenceType.TOPOLOGICAL",
+      "con_level": "ConsciousnessLevel.C2_MEMORY",
+      "passed": true,
+      "z_score": 4.472136,
+      "p_value": 7.7511e-06,
+      "effect_size": 1.570796,
+      "sample_size": 20,
+      "artifact_hash": "f4e39327cb811e8ea6ae4c9e5fa9ca7a8bfb16e5bd8d89d1a7c7cbd80190ad61",
+      "timestamp": "2026-06-26T12:43:01.376064+00:00",
+      "metadata": {
+        "passed": 20,
+        "n": 20
+      }
+    },
+    {
+      "test_id": "b6_self_repair",
+      "intel_type": "IntelligenceType.SELF_REPAIR",
+      "con_level": "ConsciousnessLevel.C3_SELF_STATE",
+      "passed": true,
+      "z_score": 5.112077,
+      "p_value": 3.192e-07,
+      "effect_size": 1.203588,
+      "sample_size": 30,
+      "artifact_hash": "0ac4e46728d1442e538339df4c46d05cec0cde23c45102c624cec2220b25c776",
+      "timestamp": "2026-06-26T12:43:01.515531+00:00",
+      "metadata": {
+        "passed": 29,
+        "mean_rate": -22265117377.126564
+      }
+    },
+    {
+      "test_id": "d1_phi15",
+      "intel_type": "IntelligenceType.RESONANCE",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": false,
+      "z_score": -31.622777,
+      "p_value": 0.0,
+      "effect_size": -1.570796,
+      "sample_size": 1000,
+      "artifact_hash": "852d375070ff035ba35c90b1e4ec48f069f596ab8c4dbdaae863953e848d07bf",
+      "timestamp": "2026-06-26T12:43:01.541503+00:00",
+      "metadata": {
+        "passed": 0,
+        "phi15": 1364.0007331374366,
+        "rate": 0.0
+      }
+    },
+    {
+      "test_id": "d2_factorization",
+      "intel_type": "IntelligenceType.POST_TURING",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": true,
+      "z_score": 7.071068,
+      "p_value": 0.0,
+      "effect_size": 1.570796,
+      "sample_size": 50,
+      "artifact_hash": "896da0da98ab3cc8bc82201a964d505642149b633b55c542efbec39385fff110",
+      "timestamp": "2026-06-26T12:43:01.542514+00:00",
+      "metadata": {
+        "passed": 50,
+        "mean_speedup": 23.381935483870972
+      }
+    },
+    {
+      "test_id": "e1_adversarial",
+      "intel_type": "IntelligenceType.TOPOLOGICAL",
+      "con_level": "ConsciousnessLevel.C3_SELF_STATE",
+      "passed": false,
+      "z_score": 1.131371,
+      "p_value": 0.2578991328,
+      "effect_size": 0.160691,
+      "sample_size": 50,
+      "artifact_hash": "99b480229d43e780636e5ffaa187455549fe99bf0a919496518dc5edaeb02874",
+      "timestamp": "2026-06-26T12:43:01.599129+00:00",
+      "metadata": {
+        "passed": 29,
+        "n": 50
+      }
+    },
+    {
+      "test_id": "f1_reproducibility",
+      "intel_type": "IntelligenceType.FORMAL_INVARIANT",
+      "con_level": "ConsciousnessLevel.C0_NULL_THEORY",
+      "passed": true,
+      "z_score": 0.0,
+      "p_value": 1.0,
+      "effect_size": 0.0,
+      "sample_size": 50,
+      "artifact_hash": "cd8b28188da0a949c90cdd6cb51e62d1f2270c833ed1610ccc041c3e64a5d4fd",
+      "timestamp": "2026-06-26T12:43:01.623970+00:00",
+      "metadata": {
+        "passed": 50,
+        "perfect": true
+      }
+    },
+    {
+      "test_id": "c0_null",
+      "intel_type": "IntelligenceType.FORMAL_INVARIANT",
+      "con_level": "ConsciousnessLevel.C0_NULL_THEORY",
+      "passed": true,
+      "z_score": 7.071068,
+      "p_value": 0.0,
+      "effect_size": 1.570796,
+      "sample_size": 50,
+      "artifact_hash": "5f2547bdaa17cb72b4180d41e8a04250a55959db300db401717e11051ca5753e",
+      "timestamp": "2026-06-26T12:43:01.696611+00:00",
+      "metadata": {
+        "passed": 50,
+        "mean_var": 0.0004895596640012216
+      }
+    },
+    {
+      "test_id": "c1_emergent",
+      "intel_type": "IntelligenceType.RESONANCE",
+      "con_level": "ConsciousnessLevel.C1_EMERGENT",
+      "passed": true,
+      "z_score": 5.477226,
+      "p_value": 4.33e-08,
+      "effect_size": 1.570796,
+      "sample_size": 30,
+      "artifact_hash": "f85d3ffef351d03ae9e4d6ca48155a8511cfa72dbe66c1060eccbbceb2013cae",
+      "timestamp": "2026-06-26T12:43:01.707624+00:00",
+      "metadata": {
+        "passed": 30
+      }
+    },
+    {
+      "test_id": "c2_memory",
+      "intel_type": "IntelligenceType.PULVINI",
+      "con_level": "ConsciousnessLevel.C2_MEMORY",
+      "passed": true,
+      "z_score": 5.477226,
+      "p_value": 4.33e-08,
+      "effect_size": 1.570796,
+      "sample_size": 30,
+      "artifact_hash": "ddc88b13d7fcc66b0bfdc9f72f5181029c28b5c955d16739159ca44390753e4f",
+      "timestamp": "2026-06-26T12:43:01.713704+00:00",
+      "metadata": {
+        "passed": 30
+      }
+    },
+    {
+      "test_id": "c3_self_state",
+      "intel_type": "IntelligenceType.CONSCIOUSNESS",
+      "con_level": "ConsciousnessLevel.C3_SELF_STATE",
+      "passed": true,
+      "z_score": 5.477226,
+      "p_value": 4.33e-08,
+      "effect_size": 1.570796,
+      "sample_size": 30,
+      "artifact_hash": "21f575fe2fa3eb360773289f6b5f7d15e9beee4708fcfca0b723e16b5cf707eb",
+      "timestamp": "2026-06-26T12:43:01.720315+00:00",
+      "metadata": {
+        "passed": 30
+      }
+    },
+    {
+      "test_id": "c4_counterfactual",
+      "intel_type": "IntelligenceType.CAUSAL",
+      "con_level": "ConsciousnessLevel.C4_COUNTERFACTUAL",
+      "passed": false,
+      "z_score": 4.472136,
+      "p_value": 7.7511e-06,
+      "effect_size": 1.570796,
+      "sample_size": 20,
+      "artifact_hash": "bc356afcb13373d1595bc40ab0cf53258958a78b2fd95393dde8a0dcfdb37c01",
+      "timestamp": "2026-06-26T12:43:01.722247+00:00",
+      "metadata": {
+        "passed": 20
+      }
+    },
+    {
+      "test_id": "c5_governance",
+      "intel_type": "IntelligenceType.SELF_REPAIR",
+      "con_level": "ConsciousnessLevel.C5_GOVERNANCE",
+      "passed": false,
+      "z_score": 4.472136,
+      "p_value": 7.7511e-06,
+      "effect_size": 1.570796,
+      "sample_size": 20,
+      "artifact_hash": "904a64178b88b64409285b325491e75b33e07172dedf9015b829d87208a6098d",
+      "timestamp": "2026-06-26T12:43:01.724246+00:00",
+      "metadata": {
+        "passed": 20
+      }
+    }
+  ],
+  "aggregate": {
+    "total": 21,
+    "passed": 14,
+    "failed": 7,
+    "pass_rate": 0.6666666666666666,
+    "mean_z": 1.428,
+    "above_5sigma": false
+  },
+  "seal": "886d109c8783fab202221bea94402d02fbdf5a4d2a8901f782486ac187140d99"
+}

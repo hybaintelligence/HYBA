@@ -14,7 +14,7 @@ import json
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
-from hyba_genesis_api.api.agentic_intelligence_service import (
+from hyba_genesis_api.api.agentic_intelligence_service.service import (
     AgentDefinition,
     AgentTaskRequest,
     AgentExecutionResult,

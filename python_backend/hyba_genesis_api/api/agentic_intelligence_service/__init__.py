@@ -102,8 +102,8 @@ async def search_agents(query: str) -> List[AgentDefinition]:
     return agentic_service.marketplace.search_agents(query)
 
 
-@router.get("/optimization/tokens/stats")
-async def get_token_optimization_stats() -> Dict[str, any]:
+@router.get("/optimization/tokens/stats", response_model=None)
+async def get_token_optimization_stats():
     """Get token optimization performance statistics.
     
     Returns:
@@ -113,8 +113,8 @@ async def get_token_optimization_stats() -> Dict[str, any]:
     return await get_token_stats_endpoint()
 
 
-@router.get("/scaling/gpu/stats")
-async def get_gpu_scaling_stats() -> Dict[str, any]:
+@router.get("/scaling/gpu/stats", response_model=None)
+async def get_gpu_scaling_stats():
     """Get GPU utilization statistics.
     
     Returns:

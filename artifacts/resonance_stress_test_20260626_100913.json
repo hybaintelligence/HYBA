@@ -1,0 +1,167 @@
+{
+  "manifest": {
+    "hostname": "HYBA",
+    "os_platform": "Windows-10-10.0.19045-SP0",
+    "processor": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "python_version": "3.11.7 (tags/v3.11.7:fa7a6f2, Dec  4 2023, 19:24:49) [MSC v.1937 64 bit (AMD64)]",
+    "timestamp_utc": "2026-06-26T09:09:10Z",
+    "phi": 1.618033988749895,
+    "tolerance": 1e-08
+  },
+  "algorithmic_cooling": {
+    "phi_fold_metrics": [
+      {
+        "fold_depth": 2,
+        "shannon_entropy_bits": 1.9940272923756182,
+        "von_neumann_entropy_bits": 0.4138813577715712,
+        "eigenvalue_spread": 0.09093128377080066,
+        "folding_ratio": 64.0,
+        "reconstruction_error": 0.3909077342940525,
+        "cpu_time_seconds": 0.025089499999921827,
+        "cpu_energy_joules": 1.6308174999949188,
+        "emergence_index": 10.805302899250014
+      }
+    ],
+    "classical_metrics": [
+      {
+        "fold_depth": 1,
+        "shannon_entropy_bits": 3.852500814263683,
+        "von_neumann_entropy_bits": -3.2034265038149176e-16,
+        "eigenvalue_spread": 1.0,
+        "cpu_time_seconds": 0.01317399999970803,
+        "cpu_energy_joules": 0.856309999981022
+      },
+      {
+        "fold_depth": 2,
+        "shannon_entropy_bits": 3.8057400207209833,
+        "von_neumann_entropy_bits": -3.2034265038149176e-16,
+        "eigenvalue_spread": 1.0,
+        "cpu_time_seconds": 0.01616809999995894,
+        "cpu_energy_joules": 1.0509264999973311
+      }
+    ],
+    "num_qubits": 4,
+    "fold_depth": 2,
+    "num_trials": 1,
+    "avg_phi_energy_joules": 1.6308174999949188,
+    "avg_classical_energy_joules": 0.9536182499891765,
+    "cooling_ratio": 1.7101366296350016,
+    "avg_phi_time_seconds": 0.025089499999921827,
+    "avg_classical_time_seconds": 0.014671049999833485,
+    "time_speedup": 0.5847486000071423,
+    "thermodynamic_advantage": false,
+    "conclusion": "No thermodynamic advantage (yet): phi-folding uses 171.01% of classical energy"
+  },
+  "decoherence_mapping": {
+    "probe_name": "mathematical_decoherence_mapping",
+    "array_size": 256,
+    "num_trials_per_depth": 1,
+    "depths_tested": [
+      10,
+      100,
+      1000
+    ],
+    "snapshots": [
+      {
+        "fold_depth": 10,
+        "folded_dimension": 2,
+        "mean_reconstruction_error": 6.799613512744713e-15,
+        "std_reconstruction_error": 0.0,
+        "mean_emergence_index": 1504.6820657254339,
+        "std_emergence_index": 0.0,
+        "emergence_index_jitter_cv": 0.0,
+        "mean_folding_ratio": 128.0,
+        "mean_cpu_time_seconds": 0.0015794999999343418,
+        "mean_shannon_entropy": 0.9796107198733293,
+        "mean_eigenvalue_spread": 1.0,
+        "coherence_preserved": true,
+        "num_trials": 1
+      },
+      {
+        "fold_depth": 100,
+        "folded_dimension": 1,
+        "mean_reconstruction_error": 6.799613512744713e-15,
+        "std_reconstruction_error": 0.0,
+        "mean_emergence_index": 3.072e-09,
+        "std_emergence_index": 0.0,
+        "emergence_index_jitter_cv": 0.0,
+        "mean_folding_ratio": 256.0,
+        "mean_cpu_time_seconds": 0.0013881000004403177,
+        "mean_shannon_entropy": 0.0,
+        "mean_eigenvalue_spread": 1.0,
+        "coherence_preserved": true,
+        "num_trials": 1
+      },
+      {
+        "fold_depth": 1000,
+        "folded_dimension": 1,
+        "mean_reconstruction_error": 6.799613512744713e-15,
+        "std_reconstruction_error": 0.0,
+        "mean_emergence_index": 3.072e-09,
+        "std_emergence_index": 0.0,
+        "emergence_index_jitter_cv": 0.0,
+        "mean_folding_ratio": 256.0,
+        "mean_cpu_time_seconds": 0.0014598000007026712,
+        "mean_shannon_entropy": 0.0,
+        "mean_eigenvalue_spread": 1.0,
+        "coherence_preserved": true,
+        "num_trials": 1
+      }
+    ],
+    "decoherence_horizon": "NOT_REACHED",
+    "decay_model": {
+      "model_type": "power_law",
+      "decay_exponent": -5.845011766648105,
+      "decay_intercept": 16.28876154436226,
+      "r_squared": 0.7500000000000001,
+      "p_value": 0.33333333333333326,
+      "std_err": 3.3746191168908126
+    },
+    "effective_qubit_count": 0,
+    "conclusion": "No decoherence detected up to depth 1000. The 'noise floor' of silicon was not reached -- mathematical coherence holds."
+  },
+  "cross_substrate_entanglement": {
+    "probe_name": "cross_substrate_entanglement",
+    "array_size": 64,
+    "density_surface_shape": [
+      8,
+      8
+    ],
+    "num_shards": 2,
+    "fold_depth": 1,
+    "shard_results": [
+      {
+        "shard_index": 0,
+        "original_elements": 32,
+        "folded_elements": 19,
+        "compression_ratio": 1.6842105263157894,
+        "reconstruction_error": 8.635787298882178e-16,
+        "reversible": true
+      },
+      {
+        "shard_index": 1,
+        "original_elements": 32,
+        "folded_elements": 19,
+        "compression_ratio": 1.6842105263157894,
+        "reconstruction_error": 6.642156291525411e-16,
+        "reversible": true
+      }
+    ],
+    "merged_invariance": {
+      "total_original_elements": 64,
+      "total_folded_elements": 38,
+      "merged_compression_ratio": 1.6842105263157894,
+      "merged_reconstruction_error": 1.0894726360610685e-15,
+      "relative_reconstruction_error": 1.7232624730534625e-16,
+      "invariance_holds": true,
+      "von_neumann_entropy_original": -11.103030095659216,
+      "von_neumann_entropy_reconstructed": -11.103030095659214,
+      "entropy_drift": 1.5998847378561334e-16,
+      "trace_distance_across_boundary": 1.2347185894566714e-15
+    },
+    "conclusion": "CROSS-SUBSTRATE ENTANGLEMENT VERIFIED: Invariance ledger holds across 2 shards (rel error=1.72e-16). The substrates are mathematically entangled."
+  },
+  "overall_verdict": "INFO Push 1: No thermodynamic advantage (algorithmic cooling not yet efficient) | PASS Push 2: No decoherence up to depth 1000 (silicon coherence holds beyond tested range) | PASS Push 3: Cross-substrate entanglement verified",
+  "summary": "Resonance_Stress_Test completed on HYBA (Windows-10-10.0.19045-SP0). phi-folding cooling ratio: 1.7101 (thermodynamic advantage: False). Decoherence horizon: NOT_REACHED. Cross-substrate invariance: True. Effective qubit capacity: ~0.",
+  "output_path": null
+}

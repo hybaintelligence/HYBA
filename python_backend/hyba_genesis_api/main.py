@@ -35,6 +35,7 @@ from hyba_genesis_api.api import (  # noqa: E402
     customer_access,
     customer_portal,
     executive_router,
+    financial_intelligence,
     health,
     intelligence,
     metabolic_router,
@@ -464,6 +465,7 @@ app.include_router(ops.router)
 app.include_router(quantum_intelligence_service.router)
 app.include_router(salamander_substrate.router)
 app.include_router(agentic_intelligence_service.router)
+app.include_router(financial_intelligence.router)
 app.include_router(webhooks.router)
 app.include_router(webhooks.api_router)
 app.include_router(websocket.router)
