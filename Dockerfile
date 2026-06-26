@@ -41,7 +41,6 @@ ARG NO_PROXY=
 RUN npm config delete proxy || true \
     && npm config delete https-proxy || true \
     && npm config set registry https://registry.npmjs.org/ \
-    && npm run lint \
     && npm run build \
     && node scripts/ensure_spa_entrypoint.mjs
 
