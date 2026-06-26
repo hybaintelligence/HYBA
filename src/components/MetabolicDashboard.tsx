@@ -8,7 +8,33 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Sparklines, SparklinesLine, SparklinesSpots } from 'react-sparklines';
+
+
+const PhiSparkline: React.FC<{ data: number[] }> = ({ data }) => {
+  if (data.length < 2) return null;
+  const width = 200;
+  const height = 40;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const span = max - min || 1;
+  const points = data
+    .map((value, index) => {
+      const x = (index / (data.length - 1)) * width;
+      const y = height - ((value - min) / span) * height;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(' ');
+  const last = data[data.length - 1];
+  const lastX = width;
+  const lastY = height - ((last - min) / span) * height;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Φ-density trend">
+      <polyline points={points} fill="none" stroke="#00ff88" strokeWidth="2" />
+      <circle cx={lastX} cy={lastY} r="3" fill="#00ff88" />
+    </svg>
+  );
+};
 
 interface StartupOptimization {
   proposal_id: string;
@@ -171,10 +197,7 @@ export const MetabolicDashboard: React.FC<MetabolicDashboardProps> = ({
           </div>
           <div className="metric-sparkline">
             {phiHistory.length > 1 && (
-              <Sparklines data={phiHistory} width={200} height={40}>
-                <SparklinesLine color="#00ff88" />
-                <SparklinesSpots />
-              </Sparklines>
+              <PhiSparkline data={phiHistory} />
             )}
           </div>
           <p className="metric-description">
