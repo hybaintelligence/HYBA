@@ -28,7 +28,7 @@
     "react-is": "^19.2.7",
     "react-router-dom": "^7.18.0",
     "recharts": "^3.8.1",
-    "vite": "^8.0.16",
+    "vite": "^8.1.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
