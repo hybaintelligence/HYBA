@@ -1,4 +1,4 @@
-# PYTHIA CAPABILITIES TEST MANIFEST
+# PYTHIA CAPABprILITIES TEST MANIFEST
 ## Extraordinary Proof Framework for Emergent Artificial Intelligence
 
 **Document Version:** 1.0.0  
