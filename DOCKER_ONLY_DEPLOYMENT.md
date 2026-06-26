@@ -39,15 +39,6 @@ Internet
 
 ## Step 1: Build Docker Image Locally
 
-```bash
-cd c:\Users\USER\OneDrive\Desktop\HYBA_Final
-
-# Build the image (uses Dockerfile)
-docker build -t hyba-fullstack:latest .
-
-# This takes ~10-15 minutes the first time
-# (Docker Build Cloud is only for CI/CD, this is local)
-```
 
 ---
 
