@@ -17,6 +17,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_COMMENTS: false
+        with:
+          config-path: .gitleaks.toml
 
   dependency-audit:
     runs-on: ubuntu-latest
