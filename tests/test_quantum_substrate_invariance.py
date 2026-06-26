@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import pathlib
+import sys
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,6 +13,7 @@ LEDGER_PATH = ROOT / "QUANTUM_SUBSTRATE_INVARIANCE_LEDGER.md"
 def load_module():
     spec = importlib.util.spec_from_file_location("quantum_substrate_invariance", MODULE_PATH)
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
