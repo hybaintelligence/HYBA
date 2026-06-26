@@ -1,7 +1,7 @@
 # HYBA backend test dependencies.
 # Install after python_backend/requirements.txt for pytest, FastAPI TestClient,
 # property/adversarial tests, and CI smoke suites.
-pytest==8.4.2
+pytest==9.0.3
 pytest-asyncio==0.24.0
 hypothesis==6.155.7
 httpx==0.28.1
