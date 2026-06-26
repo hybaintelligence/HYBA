@@ -30,6 +30,6 @@ jobs:
       - name: Frontend coverage gate
         run: npm run test:frontend:coverage
       - name: Playwright E2E
-        run: npm run test:e2e:frontend
+        run: npm run test:frontend:e2e
       - name: Build frontend/server bundle
         run: npm run build
