@@ -37,7 +37,7 @@ jobs:
           pip install flake8 black isort
 
       - name: Run flake8
-        run: flake8 reproducibility/benchmarks/ --max-line-length=100 --ignore=F401,F841,E722,F541
+        run: flake8 reproducibility/benchmarks/ --max-line-length=100 --extend-ignore=F401,F841,E722,F541
 
       - name: Check black formatting
         run: black --check reproducibility/benchmarks/
