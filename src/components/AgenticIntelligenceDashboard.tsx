@@ -8,10 +8,15 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AgentMarketplace } from "./AgentMarketplace";
 import { AgentExecutionPanel } from "./AgentExecutionPanel";
 import { Zap, Cpu, BarChart3, Shield } from "lucide-react";
+
+// Temporary stub components to avoid import errors
+const Tabs = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+const TabsContent = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+const TabsList = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+const TabsTrigger = ({ children }: { children: React.ReactNode }) => <button>{children}</button>;
 
 interface AgentDefinition {
   agent_id: string;

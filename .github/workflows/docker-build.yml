@@ -54,7 +54,11 @@ jobs:
           docker_repo="${{ secrets.DOCKERHUB_REPOSITORY }}"
           
           if [ -z "$docker_repo" ]; then
-            docker_repo="${{ secrets.DOCKERHUB_USERNAME }}/hyba-fullstack"
+            if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+              docker_repo="${{ secrets.DOCKERHUB_USERNAME }}/hyba-fullstack"
+            else
+              docker_repo="${owner_lc}/hyba-fullstack"
+            fi
           fi
 
           echo "name=${image_name}" >> "$GITHUB_OUTPUT"
