@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: TypeScript check
-        run: npm run lint -- --skipLibCheck
+        run: npx tsc --noEmit --skipLibCheck
       - name: Frontend property tests
         run: npm run test:property:frontend
       - name: Bridge/server tests

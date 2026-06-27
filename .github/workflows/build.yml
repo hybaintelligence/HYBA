@@ -28,7 +28,7 @@ jobs:
         run: node scripts/assert_cloudflare_pages_build_config.mjs
 
       - name: Type-check
-        run: npm run lint -- --skipLibCheck
+        run: npx tsc --noEmit --skipLibCheck
 
       - name: Build
         run: npm run build
