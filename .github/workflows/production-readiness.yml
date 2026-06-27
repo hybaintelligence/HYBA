@@ -69,7 +69,8 @@ jobs:
         env:
           JWT_SECRET: ci-secret
           HYBA_SKIP_STARTUP_SELF_HEALING: 'true'
-        run: timeout 60 python - <<'PY' || echo "Import check completed or timed out"
+        run: |
+          timeout 60 python - <<'EOF' || echo "Import check completed or timed out"
           from hyba_genesis_api.main import app
           routes = {route.path for route in app.routes}
           required = {
@@ -86,7 +87,7 @@ jobs:
           if missing:
               raise SystemExit(f'Missing backend routes: {missing}')
           print('backend import smoke passed')
-          PY
+          EOF
 
   frontend-typecheck:
     name: Frontend typecheck and build
