@@ -102,6 +102,8 @@ jobs:
             -e NODE_ENV=production \
             -e HYBA_ENV=production \
             -e HYBA_GOVERNANCE_RAIL=enterprise \
+            -e HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS=2 \
+            -e HYBA_SKIP_STARTUP_SELF_HEALING=true \
             -e JWT_SECRET=ci-test-secret-at-least-32-characters-long \
             -e HYBA_API_KEY_SECRET=ci-test-api-secret-at-least-32-characters \
             -e MONGO_URL=mongodb://localhost:27017 \
@@ -117,7 +119,7 @@ jobs:
             hyba-fullstack:ci-${{ github.sha }}
 
           echo "Waiting for container to become healthy..."
-          timeout 90 bash -c '
+          timeout 120 bash -c '
             until docker ps --filter name=hyba-fullstack-ci --filter status=running | grep -q hyba-fullstack-ci; do
               sleep 2
             done

@@ -10,8 +10,7 @@ paths = [
   '''DOCKER_ONLY_DEPLOYMENT\.md''',
   '''scripts/create_github_secrets\.py''',
 ]
-
 # Allow specific patterns that are false positives
-[[allowlist.regexes]]
-description = "Allow REDACTED placeholders"
-regex = '''REDACTED'''
+regexes = [
+  '''REDACTED''',
+]

@@ -115,11 +115,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r python_backend/hyba_genesis_api/requirements.txt
-          pip install pytest hypothesis psutil
+          pip install pytest hypothesis psutil pytest-benchmark
       
       - name: Run benchmarks
         run: |
-          PYTHONPATH=python_backend python3 -m pytest tests/test_quantum_regeneration_properties.py -v --benchmark-skip
+          PYTHONPATH=python_backend python3 -m pytest tests/test_quantum_regeneration_properties.py -v
       
       - name: Upload benchmark results
         if: always()
@@ -141,5 +141,4 @@ jobs:
         uses: actions/dependency-review-action@v3
         with:
           allow-licenses: MIT, Apache-2.0, BSD-3-Clause, BSD-2-Clause, Python-2.0, MPL-2.0, ISC
-          deny-licenses: GPL-3.0, AGPL-3.0
           fail-on-severity: high
