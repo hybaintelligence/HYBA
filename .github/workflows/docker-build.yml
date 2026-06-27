@@ -57,7 +57,12 @@ jobs:
             if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
               docker_repo="${{ secrets.DOCKERHUB_USERNAME }}/hyba-fullstack"
             else
-              docker_repo="${owner_lc}/hyba-fullstack"
+              # Fallback to known default if owner is empty
+              if [ -z "$owner_lc" ]; then
+                docker_repo="hybaintelligence/hyba-fullstack"
+              else
+                docker_repo="${owner_lc}/hyba-fullstack"
+              fi
             fi
           fi
 
