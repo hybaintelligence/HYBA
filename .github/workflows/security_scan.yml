@@ -29,11 +29,11 @@ jobs:
         run: |
           bandit -r python_backend -x python_backend/tests
       - name: Install Node dependencies
-        if: exists('package.json')
+        if: hashFiles('package.json') != ''
         run: |
           npm install --package-lock-only
       - name: Audit Node dependencies
-        if: exists('package.json')
+        if: hashFiles('package.json') != ''
         run: |
           # Allow non-zero exit to avoid failing the workflow on known issues;
           # review npm-audit-results.json in PR comments
