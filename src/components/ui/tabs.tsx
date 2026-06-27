@@ -1,8 +1,10 @@
-import React from 'react';
+import React from "react";
 
 export interface TabsProps {
   children: React.ReactNode;
   className?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export interface TabsListProps {

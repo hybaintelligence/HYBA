@@ -14,7 +14,7 @@ import numpy as np
 from datetime import datetime
 
 # Import benchmark modules
-from enterprise_benchmark_suite import BenchmarkSuite, BenchmarkResult, MetricsCollector
+from enterprise_benchmark_suite import EnterpriseBenchmarkSuite, BenchmarkResult, MetricsCollector
 from evidence_provenance import (
     ProvenanceTracker,
     DatasetProvenance,
@@ -44,14 +44,14 @@ class TestBenchmarkSuite:
 
     def test_suite_initialization(self):
         """Test benchmark suite can be initialized"""
-        suite = BenchmarkSuite()
+        suite = EnterpriseBenchmarkSuite()
         assert suite is not None
         assert hasattr(suite, "run_benchmark")
         assert hasattr(suite, "collect_metrics")
 
     def test_benchmark_execution(self):
         """Test benchmark execution completes"""
-        suite = BenchmarkSuite()
+        suite = EnterpriseBenchmarkSuite()
 
         # Mock a simple benchmark
         def simple_benchmark():
@@ -78,7 +78,7 @@ class TestBenchmarkSuite:
 
     def test_statistical_validation(self):
         """Test statistical validation of results"""
-        suite = BenchmarkSuite()
+        suite = EnterpriseBenchmarkSuite()
 
         # Create mock results
         results = [
@@ -506,7 +506,7 @@ class TestPerformance:
 
     def test_multiple_benchmark_execution(self):
         """Test executing multiple benchmarks"""
-        suite = BenchmarkSuite()
+        suite = EnterpriseBenchmarkSuite()
 
         def bench1():
             return {"result": 1}
