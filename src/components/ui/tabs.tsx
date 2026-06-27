@@ -24,18 +24,18 @@ export interface TabsContentProps {
   className?: string;
 }
 
-export const Tabs: React.FC<TabsProps> = ({ children, className, value, onValueChange }) => (
-  <div className={className} data-value={value}>{children}</div>
-);
+export function Tabs({ children, className, value, onValueChange }: TabsProps) {
+  return <div className={className} data-value={value}>{children}</div>;
+}
 
-export const TabsList: React.FC<TabsListProps> = ({ children, className }) => (
-  <div className={className}>{children}</div>
-);
+export function TabsList({ children, className }: TabsListProps) {
+  return <div className={className}>{children}</div>;
+}
 
-export const TabsTrigger: React.FC<TabsTriggerProps> = ({ children, className }) => (
-  <button className={className}>{children}</button>
-);
+export function TabsTrigger({ children, className, value }: TabsTriggerProps) {
+  return <button className={className} data-value={value}>{children}</button>;
+}
 
-export const TabsContent: React.FC<TabsContentProps> = ({ children, className }) => (
-  <div className={className}>{children}</div>
-);
+export function TabsContent({ children, className, value }: TabsContentProps) {
+  return <div className={className} data-value={value}>{children}</div>;
+}
