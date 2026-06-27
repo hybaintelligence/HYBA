@@ -16,7 +16,7 @@
     "noEmit": true,
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     },
     "skipLibCheck": true,
@@ -27,7 +27,8 @@
     "tests",
     "src/**/__tests__",
     "dist",
-    "node_modules"
+    "node_modules",
+    "src/components/FinancialIntelligenceDashboard.tsx"
   ],
   "include": [
     "src",
