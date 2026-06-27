@@ -24,8 +24,8 @@ export interface TabsContentProps {
   className?: string;
 }
 
-export const Tabs: React.FC<TabsProps> = ({ children, className }) => (
-  <div className={className}>{children}</div>
+export const Tabs: React.FC<TabsProps> = ({ children, className, value, onValueChange }) => (
+  <div className={className} data-value={value}>{children}</div>
 );
 
 export const TabsList: React.FC<TabsListProps> = ({ children, className }) => (
