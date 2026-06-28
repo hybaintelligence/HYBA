@@ -68,6 +68,7 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
         phi_multiplier = ((1.0 + math.sqrt(5.0)) / 2.0) ** phi_tier
         self.current_config.update(
             {
+                "target": int(target),
                 "nonce_space_contract": "phi_tiled_full_space_exploration",
                 "candidate_generation_complexity": "O(1) deterministic per attempt, O(D/2^256) expected attempts to block",
                 "complete_nonce_coverage": True,

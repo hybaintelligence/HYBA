@@ -20,21 +20,23 @@ jobs:
       - name: Install Python security tools
         run: |
           python -m pip install --upgrade pip
-          pip install pip-audit bandit
+          python -m pip install pip-audit bandit
+      - name: Run gitleaks secret scan
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --verbose
       - name: Audit Python dependencies
         run: |
-          # Audit locked dependencies; allow non-zero exit to report findings without blocking
-          pip-audit -r python_backend/hyba_genesis_api/requirements.txt || true
+          pip-audit -r python_backend/hyba_genesis_api/requirements.txt
       - name: Run bandit security analysis
         run: |
           bandit -r python_backend -x python_backend/tests
       - name: Install Node dependencies
         if: hashFiles('package.json') != ''
         run: |
-          npm install --package-lock-only
+          npm ci --ignore-scripts
       - name: Audit Node dependencies
         if: hashFiles('package.json') != ''
         run: |
-          # Allow non-zero exit to avoid failing the workflow on known issues;
-          # review npm-audit-results.json in PR comments
-          npm audit --audit-level=high --json > npm-audit-results.json || true
+          npm audit --audit-level=high
