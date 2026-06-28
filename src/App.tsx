@@ -182,6 +182,14 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
   );
 }
 
+/**
+ * Renders the main HYBA application workspace and navigation shell.
+ *
+ * Displays the active dashboard or alternate operator views, manages authentication and pool
+ * actions, polls backend telemetry, and exposes evidence export and runtime controls.
+ *
+ * @returns The rendered application interface.
+ */
 function AppContent() {
   const { isAdmin, isExecutive, backendUser } = useAuth();
   const [token, setToken] = useState<string | null>(() => {
@@ -1865,6 +1873,12 @@ function ScenarioSlider({
   );
 }
 
+/**
+ * Displays a labeled fact card.
+ *
+ * @param label - The fact label
+ * @param value - The fact value
+ */
 function TrustFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/70 bg-white/85 p-3">
@@ -1874,6 +1888,16 @@ function TrustFact({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * Renders a labeled text input bound to local state.
+ *
+ * @param id - Overrides the input element's `id`.
+ * @param label - The label displayed above the field.
+ * @param value - The current input value.
+ * @param setValue - Updates the input value when the field changes.
+ * @param type - The input type.
+ * @param placeholder - The placeholder text shown when the field is empty.
+ */
 function AuthInput({
   id,
   label,

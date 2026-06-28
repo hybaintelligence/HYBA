@@ -190,6 +190,12 @@ def _check_required_files() -> CheckResult:
 
 
 def _check_unified_engine_contract() -> CheckResult:
+    """
+    Verify the unified mining engine satisfies the PULVINI contract.
+    
+    Returns:
+    	CheckResult: A critical check result describing contract compliance, any violations, or an exception.
+    """
     start = time.monotonic()
     try:
         from pythia_mining.phi_unified_mining_engine import UnifiedMiningEngine
