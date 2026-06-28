@@ -56,6 +56,19 @@ class PulviniCompressedQuantumSolver(DodecahedralQuantumSolver):
     async def configure_compressed_search(
         self, target: int, compressed_plan: Any
     ) -> bool:
+        """
+        Configure the solver for a compressed nonce plan.
+        
+        Parameters:
+        	target (int): The target value to configure the search against.
+        	compressed_plan (Any): The compressed plan providing solver ranges and coverage metadata.
+        
+        Returns:
+        	bool: `true` when the compressed search is configured successfully.
+        
+        Raises:
+        	QuantumSolverConfigurationError: If the compressed plan does not provide complete, overlap-free coverage.
+        """
         if not bool(compressed_plan.complete_coverage) or not bool(
             compressed_plan.overlap_free
         ):
