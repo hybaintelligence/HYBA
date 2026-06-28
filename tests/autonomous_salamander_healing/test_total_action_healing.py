@@ -17,7 +17,7 @@ if str(backend_root) not in sys.path:
 
 def test_total_action_healing_applied():
     """Test that Salamander healing was applied correctly."""
-    module_path = Path("C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\yang_mills_spectral_gap.py")
+    module_path = Path(r"C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\yang_mills_spectral_gap.py")
     if not module_path.exists():
         pytest.skip(f"Module not found: {module_path}")
     
@@ -34,7 +34,7 @@ def test_total_action_healing_applied():
 
 def test_total_action_functionality_preserved():
     """Test that basic functionality is preserved after healing."""
-    module_path = Path("C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\yang_mills_spectral_gap.py")
+    module_path = Path(r"C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\yang_mills_spectral_gap.py")
     if not module_path.exists():
         pytest.skip(f"Module not found: {module_path}")
     

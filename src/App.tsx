@@ -40,7 +40,6 @@ import {
 import FEATURES, { hasInternalAccess } from "./config/features";
 import { CustomerOnboarding } from "./components/CustomerOnboarding";
 import { PricingPage } from "./components/PricingPage";
-import { WebSocketProvider } from "./components/WebSocketProvider";
 
 import {
   type AuthResponse,
@@ -86,7 +85,7 @@ import {
 } from "./governance";
 import { useAuth } from "./components/AuthProvider";
 import { InternalOnly } from "./components/InternalOnly";
-import { SkillModeProvider, useSkillMode, SkillModeSelector, SKILL_MODE_LABELS } from "./skillMode";
+import { SkillModeProvider, useSkillMode, SkillModeSelector } from "./skillMode";
 import {
   ClaimBoundaryBadge,
   MetricExplainerCard,
@@ -121,8 +120,6 @@ const THEME = {
 const UNAVAILABLE = "—";
 
 const PHI_TIERS = [7, 10, 12, 15, 18, 20, 31, 76];
-
-const EXECUTIVE_ROLES = ["ceo_heir_apparent", "chairman", "cto", "cfo", "legal", "chief_of_staff"];
 
 function fmtNum(value: NullableNumber, digits = 2): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -211,7 +208,7 @@ function AppContent() {
   const [passwordInput, setPasswordInput] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [authFeedback, setAuthFeedback] = useState<{ text: string; error: boolean } | null>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Array<Record<string, unknown>>>([]);
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
   const [telemetryError, setTelemetryError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -219,10 +216,10 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [powerScale, setPowerScale] = useState(1);
   const [phiTier, setPhiTier] = useState(12);
-  const [computeNode, setComputeNode] = useState("us-east-1");
-  const [residencyStatus, setResidencyStatus] = useState("active");
-  const [jurisdiction, setJurisdiction] = useState("us");
-  const [powerScaleResponse, setPowerScaleResponse] = useState<{
+  const [computeNode] = useState("us-east-1");
+  const [residencyStatus] = useState("active");
+  const [jurisdiction] = useState("us");
+  const [_powerScaleResponse, _setPowerScaleResponse] = useState<{
     status: string;
     effective_hashrate_ehs?: number;
     phi_tier?: number;
@@ -1878,7 +1875,7 @@ function TrustFact({ label, value }: { label: string; value: string }) {
 }
 
 function AuthInput({
-  id,
+  _id,
   label,
   value,
   setValue,

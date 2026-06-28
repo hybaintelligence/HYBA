@@ -127,9 +127,12 @@ docker-compose up -d
 # Verify PULVINI compression works
 curl http://localhost:3001/api/health/startup-memo
 # Output: Φ-density 0.693 → 0.973 (+40.4%)
+# Verify PULVINI compression works
 
 # Verify mining evidence sealing
 # Mine locally, check sealed evidence bundles in runtime/evidence/
+# Verify Φ-mining correlation
+# Run autonomy tests, observe proposal quality improvement
 
 # Verify Φ-mining correlation
 # Run autonomy tests, observe proposal quality improvement
@@ -276,7 +279,7 @@ You're deploying:
 
 ---
 
-## Your Next Move
+### Your Next Move
 
 ### Tomorrow
 ```bash

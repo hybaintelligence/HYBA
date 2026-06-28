@@ -121,23 +121,30 @@ class SovereignNode:
         if not self.verify_sovereignty_gate():
             raise RuntimeError("Node does not pass sovereignty gate; cannot export memory")
 
+        # Capture identity ONCE to ensure seal verification works
+        # (timestamp must match between packet_dict and SovereignMemoryPacket)
+        node_identity = self.get_identity()
+        timestamp_sealed = datetime.now(UTC).isoformat()
+
         # Serialize memory state
         state_json = json.dumps(memory_state, sort_keys=True, default=str)
         state_hash = hashlib.sha256(state_json.encode()).hexdigest()
 
-        # Capture current attestation evidence
+        # Capture current attestation evidence (preserve all attestations per property)
         attestation_report = self.attestation_engine.get_sovereignty_report()
-        attestation_evidence = {
-            prop: att["evidence_hash"] if isinstance(att, dict) else att.evidence_hash
-            for prop, atts in attestation_report.get("by_property", {}).items()
-            for att in (atts if isinstance(atts, list) else [atts])
-        }
+        attestation_evidence = {}
+        for prop, atts in attestation_report.get("by_property", {}).items():
+            att_list = atts if isinstance(atts, list) else [atts]
+            attestation_evidence[prop] = [
+                att["evidence_hash"] if isinstance(att, dict) else att.evidence_hash
+                for att in att_list
+            ]
 
         # Build packet
         packet_dict = {
             "problem_id": problem_id,
-            "node_origin": self.get_identity().__dict__,
-            "timestamp_sealed": datetime.now(UTC).isoformat(),
+            "node_origin": node_identity.__dict__,
+            "timestamp_sealed": timestamp_sealed,
             "memory_state": memory_state,
             "state_hash": state_hash,
             "sovereignty_attestations": attestation_evidence,
@@ -156,8 +163,8 @@ class SovereignNode:
 
         packet = SovereignMemoryPacket(
             problem_id=problem_id,
-            node_origin=self.get_identity(),
-            timestamp_sealed=datetime.now(UTC).isoformat(),
+            node_origin=node_identity,
+            timestamp_sealed=timestamp_sealed,
             memory_state=memory_state,
             state_hash=state_hash,
             sovereignty_attestations=attestation_evidence,

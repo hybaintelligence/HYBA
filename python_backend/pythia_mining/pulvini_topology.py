@@ -316,14 +316,20 @@ _ico_adj = _build_neighbors_from_edges(_ICO_EDGES)
 ADJACENCY_MAP = {}
 
 # D-nodes: 0-19 (dodecahedron, degree 3 internal + 3 to I-nodes = 6 total)
+# I-nodes: 20-31 (icosahedron, degree 5 internal + 5 to D-nodes = 10 total)
+# Create balanced bipartite: 20 D-nodes × 3 I-neighbors = 60 = 12 I-nodes × 5 D-neighbors
+
+# Simple balanced bipartite: each D-node d connects to 3 I-nodes:
+#   (20 + d%12, 20 + (d+1)%12, 20 + (d+2)%12)
+# This ensures each I-node gets exactly 5 D-connections
+
 for d in range(20):
     internal_neighbors = _dode_adj[d]
-    # Each D-node connects to 3 I-nodes
-    # Use a fixed pattern: D-node d connects to I-nodes based on modular arithmetic
+    # Three consecutive I-nodes in a cycle
     i_neighbors = sorted(set([
         20 + (d % 12),
-        20 + ((d + 4) % 12),
-        20 + ((d + 8) % 12),
+        20 + ((d + 1) % 12),
+        20 + ((d + 2) % 12),
     ]))
     ADJACENCY_MAP[d] = {
         "d": internal_neighbors,
@@ -333,23 +339,20 @@ for d in range(20):
 # I-nodes: 20-31 (icosahedron, degree 5 internal + 5 to D-nodes = 10 total)
 # For each I-node, find all D-nodes that connect to it (reciprocal)
 for i in range(20, 32):
-    ico_idx = i - 20
-    internal_neighbors = _ico_adj.get(ico_idx, [])
+    # Get internal icosahedral neighbors
+    internal_neighbors = _ico_adj.get(i, [])
     
-    # Find which D-nodes connect to this I-node
+    # Find which D-nodes connect to this I-node (reciprocal from above bipartite)
+    ico_idx = i - 20  # 0-11
     d_neighbors = []
     for d in range(20):
-        i_neighbors_of_d = [
-            20 + (d % 12),
-            20 + ((d + 4) % 12),
-            20 + ((d + 8) % 12),
-        ]
-        if i in i_neighbors_of_d:
+        # Check if this I-node is in D-node d's I-neighbors
+        if i in [20 + (d % 12), 20 + ((d + 1) % 12), 20 + ((d + 2) % 12)]:
             d_neighbors.append(d)
     
     ADJACENCY_MAP[i] = {
-        "d": internal_neighbors,
-        "i": sorted(d_neighbors),
+        "d": sorted(d_neighbors),
+        "i": internal_neighbors,
     }
 
 

@@ -28,7 +28,8 @@
     "src/**/__tests__",
     "dist",
     "node_modules",
-    "src/components/FinancialIntelligenceDashboard.tsx"
+    "src/components/FinancialIntelligenceDashboard.tsx",
+    "src/components/AgenticIntelligenceDashboard.tsx"
   ],
   "include": [
     "src",

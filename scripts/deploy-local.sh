@@ -17,10 +17,17 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # Check if docker-compose is available
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo "Error: docker-compose is not installed. Please install it and try again."
+COMPOSE_CMD=""
+if command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+else
+    echo "Error: Neither docker-compose nor docker compose found. Please install Docker Compose and try again."
     exit 1
 fi
+
+echo "Using compose command: $COMPOSE_CMD"
 
 # Create necessary directories
 echo "Creating runtime directories..."
@@ -71,10 +78,10 @@ EOF
 fi
 
 echo "Pulling Docker image from Docker Cloud..."
-docker-compose -f docker-compose.local.yml pull
+$COMPOSE_CMD -f docker-compose.local.yml pull
 
 echo "Starting services..."
-docker-compose -f docker-compose.local.yml up -d
+$COMPOSE_CMD -f docker-compose.local.yml up -d
 
 echo ""
 echo "=========================================="
@@ -93,10 +100,10 @@ echo "Governance Rail: treasury"
 echo "Evidence Storage: ./runtime/evidence (local filesystem)"
 echo ""
 echo "Useful Commands:"
-echo "  View logs:        docker-compose -f docker-compose.local.yml logs -f"
-echo "  Stop services:    docker-compose -f docker-compose.local.yml down"
-echo "  Restart services:  docker-compose -f docker-compose.local.yml restart"
-echo "  Check status:      docker-compose -f docker-compose.local.yml ps"
+echo "  View logs:        $COMPOSE_CMD -f docker-compose.local.yml logs -f"
+echo "  Stop services:    $COMPOSE_CMD -f docker-compose.local.yml down"
+echo "  Restart services: $COMPOSE_CMD -f docker-compose.local.yml restart"
+echo "  Check status:     $COMPOSE_CMD -f docker-compose.local.yml ps"
 echo ""
 echo "To enable mining, edit .env.local and set:"
 echo "  HYBA_ENABLE_MINING_AUTOCONNECT=true"

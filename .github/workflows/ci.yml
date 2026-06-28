@@ -38,7 +38,7 @@ jobs:
       
       - name: Run regeneration manager API tests
         run: |
-          PYTHONPATH=python_backend python3 -m pytest tests/test_regeneration_manager_api.py -v --tb=short || true
+          PYTHONPATH=python_backend python3 -m pytest tests/test_regeneration_manager_api.py -v --tb=short
       
       - name: Upload test results
         if: always()

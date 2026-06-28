@@ -1,22 +1,45 @@
 {
-  "autonomy_level": "autonomous",
+  "autonomy_level": "unbounded",
   "capacity_limits": {
     "max_autonomous_hashrate_ehs": 0.5,
     "max_autonomous_power_watts": 500.0,
     "max_proposals_per_cycle": 3
   },
-  "compression_seeking_history": [],
-  "epochs": 0,
-  "logical_consistency_history": [],
-  "optimization_targets": [],
+  "compression_seeking_history": [
+    1.8786
+  ],
+  "epochs": 1,
+  "logical_consistency_history": [
+    0.8
+  ],
+  "optimization_targets": [
+    {
+      "current_value": 1.86,
+      "objective_function": "maximize_phi_coherence",
+      "priority": 3,
+      "target_name": "compression_target",
+      "target_value": 1.8786,
+      "tolerance": 0.05
+    }
+  ],
   "phi_coherence_threshold": 0.7,
   "phi_density_history": [
-    0.5,
-    0.5,
-    0.5
+    0.7
   ],
   "pool_response_history": [],
-  "proposals": [],
+  "proposals": [
+    {
+      "applied": true,
+      "codebase_source_module": "pulvini_memory_compression_proof",
+      "counterfactual_confidence": 0.7999999999999999,
+      "current_value": 1.86,
+      "expected_phi_density_gain": 0.0036643237499999204,
+      "improvement_type": "compression_target",
+      "logical_consistency_score": 0.8,
+      "proposal_id": "self_opt_0_1782499128",
+      "proposed_value": 1.8786
+    }
+  ],
   "schema_version": 3,
   "target_selection": {
     "coherence_threshold": {
@@ -26,10 +49,10 @@
       "successes": 1
     },
     "compression_target": {
-      "evidence_weight": 1.0,
+      "evidence_weight": 1.1,
       "failures": 1,
-      "posterior_mean": 0.5,
-      "successes": 1
+      "posterior_mean": 0.666667,
+      "successes": 2
     },
     "phi_scaling": {
       "evidence_weight": 1.0,

@@ -221,7 +221,7 @@ class ResonanceSynthesizer:
         """
         if substrate_precision < self.precision_threshold:
             raise ValueError(
-                f"Substrate precision {substrain_precision} below threshold "
+                f"Substrate precision {substrate_precision} below threshold "
                 f"{self.precision_threshold}. Cannot achieve resonance."
             )
         

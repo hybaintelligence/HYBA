@@ -11,12 +11,7 @@ import React, { useState, useEffect } from "react";
 import { AgentMarketplace } from "./AgentMarketplace";
 import { AgentExecutionPanel } from "./AgentExecutionPanel";
 import { Zap, Cpu, BarChart3, Shield } from "lucide-react";
-
-// Temporary stub components to avoid import errors
-const Tabs = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
-const TabsContent = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
-const TabsList = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
-const TabsTrigger = ({ children }: { children: React.ReactNode }) => <button>{children}</button>;
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AgentDefinition {
   agent_id: string;
@@ -159,9 +154,7 @@ export const AgenticIntelligenceDashboard: React.FC = () => {
           </div>
           {tokenStats ? (
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-white">
-                {tokenStats.total_optimizations}
-              </div>
+              <div className="text-2xl font-bold text-white">{tokenStats.total_optimizations}</div>
               <div className="text-xs text-gray-500">optimizations performed</div>
               <div className="text-xs text-emerald-400">
                 {tokenStats.avg_tokens_saved_per_optimization.toFixed(0)} avg saved

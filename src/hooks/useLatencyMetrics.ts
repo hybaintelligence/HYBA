@@ -60,9 +60,7 @@ function normalizeBackendBaseUrl(value: string | undefined): string {
 
 export function getFrontendBackendBaseUrl(): string {
   const metaEnv = (import.meta as unknown as { env?: Record<string, string> }).env || {};
-  return normalizeBackendBaseUrl(
-    metaEnv.VITE_HYBA_BACKEND_URL || metaEnv.VITE_PULVINI_BACKEND_URL,
-  );
+  return normalizeBackendBaseUrl(metaEnv.VITE_HYBA_BACKEND_URL || metaEnv.VITE_PULVINI_BACKEND_URL);
 }
 
 export function ensurePingInterval() {

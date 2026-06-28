@@ -45,3 +45,9 @@ venv/
 .venv/
 .env.local
 coverage/
+.hypothesis/
+logs/
+OneDrive/
+npm-shrinkwrap.json
+vite.config.build.ts
+artifacts/clean_10/

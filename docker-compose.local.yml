@@ -6,8 +6,9 @@ version: '3.8'
 
 services:
   backend:
-    # Build locally if REGISTRY is empty, otherwise pull from Docker Cloud
-    image: ${REGISTRY:+${REGISTRY}/${DOCKERHUB_REPOSITORY:-${DOCKERHUB_USERNAME:-hyba-fullstack}/hyba-fullstack}:latest}
+    # Build locally or pull from registry based on REGISTRY environment variable
+    # Note: Use deployment script to set REGISTRY appropriately
+    image: ${REGISTRY:-}${REGISTRY:+/}${DOCKERHUB_REPOSITORY:-hyba-fullstack/hyba-fullstack}:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -111,44 +112,9 @@ services:
       timeout: 3s
       retries: 5
 
-  # Optional: Observability stack for local development
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: hyba-prometheus-local
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data-local:/prometheus
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-    networks:
-      - hyba-local-network
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: hyba-grafana-local
-    ports:
-      - "3002:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-    volumes:
-      - grafana-data-local:/var/lib/grafana
-      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
-    depends_on:
-      - prometheus
-    networks:
-      - hyba-local-network
-    restart: unless-stopped
-
 volumes:
   postgres-data-local:
   redis-data-local:
-  prometheus-data-local:
-  grafana-data-local:
 
 networks:
   hyba-local-network:

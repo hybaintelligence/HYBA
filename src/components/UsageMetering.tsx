@@ -77,9 +77,10 @@ export function UsageMetering() {
     );
   }
 
-  const quotaPercentage = usage.compute_units_quota > 0
-    ? (usage.compute_units_used / usage.compute_units_quota) * 100
-    : 0;
+  const quotaPercentage =
+    usage.compute_units_quota > 0
+      ? (usage.compute_units_used / usage.compute_units_quota) * 100
+      : 0;
   const qaasUsage = usage.breakdown.qaas || 0;
   const qiaasUsage = usage.breakdown.qiaas || 0;
 
@@ -134,9 +135,7 @@ export function UsageMetering() {
               <Activity className="h-4 w-4" />
               <span className="text-xs font-medium">QaaS Usage</span>
             </div>
-            <div className="text-2xl font-bold text-slate-950">
-              {qaasUsage.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-slate-950">{qaasUsage.toLocaleString()}</div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
 
@@ -145,9 +144,7 @@ export function UsageMetering() {
               <TrendingUp className="h-4 w-4" />
               <span className="text-xs font-medium">QIaaS Usage</span>
             </div>
-            <div className="text-2xl font-bold text-slate-950">
-              {qiaasUsage.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-slate-950">{qiaasUsage.toLocaleString()}</div>
             <div className="mt-1 text-xs text-slate-500">compute units</div>
           </div>
         </div>

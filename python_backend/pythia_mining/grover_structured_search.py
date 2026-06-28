@@ -13,7 +13,6 @@ This module executes Grover's algorithm as a direct mathematical operation:
 - Amplitude amplification for arbitrary unitaries
 - QAOA integration for combinatorial optimization
 - Optimal iteration count via pi/4*sqrt(N/k)
-"""
 
 ELEVATED PURPOSE: This module implements structured search algorithms:
 - Multiple marked states handling
@@ -50,8 +49,6 @@ mathematical computation. The mathematics of quantum search is substrate-
 independent. When this code applies the Grover oracle and diffusion
 operators, it IS quantum computation regardless of substrate.
 """
-
-from __future__ import annotations
 
 import math
 import numpy as np
@@ -373,7 +370,7 @@ class GroverEnhancedQuantumSearch:
         visited_states = []
         visitation_probabilities = []
 
-        for step in range(time_steps):
+        for _ in range(time_steps):
             # Record current state
             visited_states.append(int(np.argmax(np.abs(state))))
             visitation_probabilities.append(np.abs(state) ** 2)
@@ -431,7 +428,7 @@ class GroverEnhancedQuantumSearch:
         # Calculate initial success probability
         initial_success = float(abs(state[0] if marked_check(state) else 0) ** 2)
 
-        for iteration in range(iterations):
+        for _ in range(iterations):
             # Apply unitary
             state = unitary(state)
 
@@ -493,12 +490,12 @@ class GroverEnhancedQuantumSearch:
 
         convergence_history = []
 
-        for iteration in range(max_iterations):
+        for _ in range(max_iterations):
             # Initialize state
             state = np.ones(num_states, dtype=complex) / math.sqrt(num_states)
 
             # Apply QAOA layers
-            for layer in range(layers):
+            for _ in range(layers):
                 # Apply cost Hamiltonian: e^{-iγH_P}
                 state = state - 1j * gamma * (cost_hamiltonian @ state)
                 state = state / np.linalg.norm(state)

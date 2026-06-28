@@ -11,21 +11,44 @@
 
 import type { RecursiveSelfLearningSubstrate } from "./recursive_self_learning";
 
+interface CognitiveLayer {
+  [key: string]: unknown;
+}
+
+interface BehaviorSignature {
+  learning_rate: number;
+  coupling_strength: number;
+  geometric_shape: string | unknown;
+  phi: number;
+}
+
 interface SystemState {
   phi: number;
   irreducibility: number;
   learning_rate: number;
   recursion_depth: number;
   coupling_strength: number;
-  cognitive_layers: any[];
+  cognitive_layers: CognitiveLayer[];
   timestamp: number;
+}
+
+interface MetacognitiveEntry {
+  [key: string]: unknown;
+}
+
+interface ConvergenceEntry {
+  [key: string]: unknown;
+}
+
+interface StateEntry {
+  [key: string]: unknown;
 }
 
 interface MemorySnapshot {
   phi_history: number[];
-  metacognitive_history: any[];
-  convergence_history: any[];
-  state_history: any[];
+  metacognitive_history: MetacognitiveEntry[];
+  convergence_history: ConvergenceEntry[];
+  state_history: StateEntry[];
   prediction_error_history: number[];
 }
 
@@ -130,19 +153,19 @@ export class TemporalIntegrationEngine {
    * 3. Measure behavior change
    * 4. Causal efficacy = magnitude of divergence
    */
-  public async measureCausalEfficacy(system: RecursiveSelfLearningSubstrate): Promise<number> {
+  public async measureCausalEfficacy(_system: RecursiveSelfLearningSubstrate): Promise<number> {
     // Baseline behavior with intact memory
-    const memorySnapshot = this.captureMemorySnapshot(system);
-    const behaviorWithMemory = await this.predictBehavior(system, 10);
+    const memorySnapshot = this.captureMemorySnapshot(_system);
+    const behaviorWithMemory = await this.predictBehavior(_system, 10);
 
     // Corrupt memory
-    this.corruptSystemMemory(system);
+    this.corruptSystemMemory(_system);
 
     // Measure behavior without memory
-    const behaviorWithoutMemory = await this.predictBehavior(system, 10);
+    const behaviorWithoutMemory = await this.predictBehavior(_system, 10);
 
     // Restore memory
-    this.restoreSystemMemory(system, memorySnapshot);
+    this.restoreSystemMemory(_system, memorySnapshot);
 
     // Causal efficacy = how much behavior depends on memory
     const divergence = this.behaviorDivergence(behaviorWithMemory, behaviorWithoutMemory);
@@ -280,8 +303,8 @@ export class TemporalIntegrationEngine {
   private async predictBehavior(
     system: RecursiveSelfLearningSubstrate,
     steps: number,
-  ): Promise<any[]> {
-    const behaviors = [];
+  ): Promise<BehaviorSignature[]> {
+    const behaviors: BehaviorSignature[] = [];
 
     for (let i = 0; i < steps; i++) {
       // Capture behavioral signature
@@ -301,7 +324,7 @@ export class TemporalIntegrationEngine {
     return behaviors;
   }
 
-  private behaviorDivergence(behavior1: any[], behavior2: any[]): number {
+  private behaviorDivergence(behavior1: BehaviorSignature[], behavior2: BehaviorSignature[]): number {
     let divergence = 0;
     const n = Math.min(behavior1.length, behavior2.length);
 
@@ -321,7 +344,7 @@ export class TemporalIntegrationEngine {
     return divergence / n;
   }
 
-  private captureMemorySnapshot(system: RecursiveSelfLearningSubstrate): MemorySnapshot {
+  private captureMemorySnapshot(_system: RecursiveSelfLearningSubstrate): MemorySnapshot {
     // This is a mock - actual implementation would deep clone system memory
     return {
       phi_history: [],
@@ -332,15 +355,15 @@ export class TemporalIntegrationEngine {
     };
   }
 
-  private corruptSystemMemory(system: RecursiveSelfLearningSubstrate): void {
+  private corruptSystemMemory(_system: RecursiveSelfLearningSubstrate): void {
     // Corrupt memory structures
     // In actual implementation, would modify system's internal memory
-    system.simulateIntegrationLoss();
+    _system.simulateIntegrationLoss();
   }
 
   private restoreSystemMemory(
-    system: RecursiveSelfLearningSubstrate,
-    snapshot: MemorySnapshot,
+    _system: RecursiveSelfLearningSubstrate,
+    _snapshot: MemorySnapshot,
   ): void {
     // Restore memory from snapshot
     // In actual implementation, would restore system's internal state

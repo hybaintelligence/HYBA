@@ -70,9 +70,7 @@ const CategoryIcon: React.FC<{ category: string }> = ({ category }) => {
   return <Icon className="w-5 h-5" />;
 };
 
-export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
-  onAgentSelect,
-}) => {
+export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({ onAgentSelect }) => {
   const [agents, setAgents] = useState<AgentDefinition[]>([]);
   const [filteredAgents, setFilteredAgents] = useState<AgentDefinition[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +113,7 @@ export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
         (agent) =>
           agent.name.toLowerCase().includes(query) ||
           agent.description.toLowerCase().includes(query) ||
-          agent.capabilities.some((cap) => cap.toLowerCase().includes(query))
+          agent.capabilities.some((cap) => cap.toLowerCase().includes(query)),
       );
     }
 
@@ -155,9 +153,7 @@ export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Agent Marketplace</h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">
-            {filteredAgents.length} agents available
-          </span>
+          <span className="text-sm text-gray-400">{filteredAgents.length} agents available</span>
         </div>
       </div>
 
@@ -177,11 +173,7 @@ export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() =>
-                setSelectedCategory(
-                  selectedCategory === category ? null : category
-                )
-              }
+              onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
               className={`px-3 py-2 rounded-lg border transition-colors ${
                 selectedCategory === category
                   ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
@@ -214,9 +206,7 @@ export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
               <EvidenceTierBadge tier={agent.evidence_tier} />
             </div>
 
-            <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-              {agent.description}
-            </p>
+            <p className="text-sm text-gray-400 mb-3 line-clamp-2">{agent.description}</p>
 
             <div className="flex flex-wrap gap-1 mb-3">
               {agent.capabilities.slice(0, 3).map((capability) => (
@@ -250,9 +240,7 @@ export const AgentMarketplace: React.FC<AgentMarketplaceProps> = ({
         <div className="p-6 bg-gray-800/30 border border-emerald-500/50 rounded-lg">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">
-                {selectedAgent.name}
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-1">{selectedAgent.name}</h3>
               <p className="text-sm text-gray-400">{selectedAgent.description}</p>
             </div>
             <EvidenceTierBadge tier={selectedAgent.evidence_tier} />

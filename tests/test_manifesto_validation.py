@@ -515,7 +515,7 @@ class IntegrationValidation:
     Integration tests validating the complete manifesto claims.
     """
     
-    deftest_end_to_end_resonance_synthesis(self):
+    def test_end_to_end_resonance_synthesis(self):
         """
         End-to-end test of resonance synthesis.
         """

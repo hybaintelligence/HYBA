@@ -431,7 +431,10 @@ async function autoConnectViaBTC(): Promise<void> {
         "✅ Auto-connected to mining pool",
       );
     } else {
-      logger.warn({ status: response.status, pool_id: payload.pool_id }, "Auto-connect to mining pool failed");
+      logger.warn(
+        { status: response.status, pool_id: payload.pool_id },
+        "Auto-connect to mining pool failed",
+      );
     }
   } catch (error: unknown) {
     logger.warn(

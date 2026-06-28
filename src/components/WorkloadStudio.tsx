@@ -121,7 +121,11 @@ function classifyWorkload(input: string): WorkloadType {
   return "risk register";
 }
 
-function buildFallbackTransformation(type: WorkloadType, lens: CognitiveLens, input: string): string {
+function buildFallbackTransformation(
+  type: WorkloadType,
+  lens: CognitiveLens,
+  input: string,
+): string {
   const lines = input.split(/\n+/).filter(Boolean).slice(0, 4);
   const focus: Record<CognitiveLens, string> = {
     executive: "decision posture, strategic risk concentration, and approval path",
@@ -324,7 +328,9 @@ export function WorkloadStudio() {
             endpoint_path: "/api/v1/computational-intelligence-services/{service_id}/execute",
             fallback: true,
             fallback_reason:
-              customerError instanceof Error ? customerError.message : "Customer CIaaS route unavailable",
+              customerError instanceof Error
+                ? customerError.message
+                : "Customer CIaaS route unavailable",
             trace_id: clientTraceId,
             trace_id_provenance: "client_generated",
           };
@@ -363,7 +369,11 @@ export function WorkloadStudio() {
         const plan = await intelligenceOrchestrate({
           goal: `Produce a reproducible evidence packet for a ${classification}`,
           priority: lens === "auditor" ? 9 : lens === "business" ? 8 : 7,
-          constraints: { trace_id: invocation.trace_id, cognitive_lens: lens, preserve_human_approval: true },
+          constraints: {
+            trace_id: invocation.trace_id,
+            cognitive_lens: lens,
+            preserve_human_approval: true,
+          },
         });
         orchestrateSucceeded = true;
         planSummary = plan.steps
@@ -544,8 +554,8 @@ export function WorkloadStudio() {
             </div>
             <p className="mt-2 text-xs text-slate-500">
               Demo convenience only: the key is stored in this browser so the buyer can move from
-              onboarding to workload transformation without DevTools. Production custody must move to
-              HttpOnly cookies or server-side sessions.
+              onboarding to workload transformation without DevTools. Production custody must move
+              to HttpOnly cookies or server-side sessions.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
@@ -556,7 +566,8 @@ export function WorkloadStudio() {
             disabled={running || workload.trim().length === 0}
             className="executive-button w-full justify-center bg-[#06162D] text-white disabled:opacity-50"
           >
-            <Play className="h-4 w-4" /> {running ? "Running CIaaS transformation…" : "Run CIaaS transformation"}
+            <Play className="h-4 w-4" />{" "}
+            {running ? "Running CIaaS transformation…" : "Run CIaaS transformation"}
           </button>
         </div>
 
@@ -578,13 +589,17 @@ export function WorkloadStudio() {
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-2xl border border-slate-200 p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Before</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                    Before
+                  </p>
                   <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs text-slate-700">
                     {result.before}
                   </pre>
                 </div>
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">After</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
+                    After
+                  </p>
                   <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs text-emerald-950">
                     {result.after}
                   </pre>
@@ -592,14 +607,21 @@ export function WorkloadStudio() {
               </div>
               <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-950">
                 <CheckCircle2 className="mr-2 inline h-4 w-4" />
-                Trace <strong>{result.traceId}</strong> · classified as <strong>{result.workloadType}</strong> · lens <strong>{result.lens}</strong>
+                Trace <strong>{result.traceId}</strong> · classified as{" "}
+                <strong>{result.workloadType}</strong> · lens <strong>{result.lens}</strong>
               </div>
               <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Endpoint path</p>
-                <p className="mt-2 break-all font-mono text-xs text-slate-700">{result.endpointInvoked}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                  Endpoint path
+                </p>
+                <p className="mt-2 break-all font-mono text-xs text-slate-700">
+                  {result.endpointInvoked}
+                </p>
               </div>
               <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Evidence packet</p>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                  Evidence packet
+                </p>
                 <pre className="mt-3 max-h-80 overflow-auto rounded-xl bg-slate-950 p-4 text-xs text-slate-100">
                   {JSON.stringify(result.evidencePacket, null, 2)}
                 </pre>

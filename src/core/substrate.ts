@@ -35,7 +35,7 @@ export async function sync_substrate_state(retries = 0): Promise<void> {
       resonance_floor: readiness.governance?.phi_scaled_floor ?? null,
     };
     logger.debug({ ...ctx, substrate: state }, "Substrate: State synchronized with Python core.");
-  } catch (_error) {
+  } catch {
     if (retries < 5) {
       const delay = Math.pow(2, retries) * 1000;
       logger.warn(
@@ -87,7 +87,7 @@ export async function shutdown_substrate() {
     // If Python has a shutdown endpoint, call it here.
     // Otherwise, the TS parent will SIGTERM it.
     state.initialized = false;
-  } catch (_e) {
+  } catch {
     logger.error({ ...ctx }, "Substrate: Error during bridge shutdown.");
   }
 }
