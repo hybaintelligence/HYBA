@@ -39,9 +39,11 @@ from pythia_mining.yang_mills_spectral_gap import (
     YANG_MILLS_THRESHOLD,
     LAMBDA_QCD,
 )
-from scripts.forensic_spectral_zeta_probe import (
-    run_probe as run_forensic_spectral_zeta_probe,
-)
+# Import commented out - module not available in backend context
+# from scripts.forensic_spectral_zeta_probe import (
+#     run_probe as run_forensic_spectral_zeta_probe,
+# )
+run_forensic_spectral_zeta_probe = None  # Placeholder
 
 router = APIRouter(
     prefix="/api/admin/millennium-mathematics", tags=["millennium-mathematics-admin"]

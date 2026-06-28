@@ -1,0 +1,121 @@
+# Local Development Deployment (Gordon's Tier 1 Strategy)
+# Based on HYBA_HISTORIC_DEPLOYMENT_STRATEGY.md
+# Governance Rail: treasury
+# Evidence Handling: Local filesystem storage
+version: '3.8'
+
+services:
+  backend:
+    # Build locally or pull from registry based on REGISTRY environment variable
+    # Note: Use deployment script to set REGISTRY appropriately
+    image: ${REGISTRY:-}${REGISTRY:+/}${DOCKERHUB_REPOSITORY:-hyba-fullstack/hyba-fullstack}:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hyba-backend-local
+    ports:
+      - "3000:3000"  # Frontend bridge
+      - "3001:3001"  # Backend API
+    env_file:
+      - .env.local
+    environment:
+      # Gordon's Tier 1 Configuration
+      HYBA_GOVERNANCE_RAIL: treasury
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql+psycopg2://hyba:hyba@postgres:5432/hyba
+      LOG_LEVEL: info
+      
+      # Autonomous optimization enabled (Tier 1)
+      HYBA_STARTUP_SELF_HEALING_ENABLED: 'true'
+      HYBA_AUTONOMOUS_RECOVERY_ENABLED: 'true'
+      HYBA_SALAMANDER_AUTO_FIX_ENABLED: 'true'
+      HYBA_ALGORITHM_DISCOVERY_ENABLED: 'true'
+      HYBA_DYNAMIC_ALGORITHM_SWITCHING: 'true'
+      HYBA_AUTONOMOUS_INNOVATION: 'true'
+      HYBA_PERFORMANCE_OPTIMIZATION_AUTO: 'true'
+      
+      # Mining configuration (local development)
+      HYBA_ENABLE_MINING_AUTOCONNECT: 'false'
+      HYBA_AUTO_START_MINING: 'false'
+      HYBA_IMMEDIATE_MINING_ON_DEPLOY: 'false'
+      
+      # Memory and knowledge base (Tier 1)
+      HYBA_MEMORY_SEEDING_ENABLED: 'true'
+      HYBA_BOOTSTRAP_KNOWLEDGE_BASE: 'true'
+      HYBA_INITIAL_ACTION_SEQUENCE: 'true'
+      HYBA_LEARNING_FROM_BLOCKCHAIN: 'true'
+      
+      # Backend connectivity
+      PULVINI_BACKEND_URL: http://127.0.0.1:3001
+      HYBA_SPAWN_BACKEND: 'false'
+      HYBA_BACKEND_HOST: 127.0.0.1
+      HYBA_BACKEND_PORT: 3001
+      
+      # Evidence storage (local filesystem per Gordon's Tier 1)
+      HYBA_EVIDENCE_STORAGE_PATH: /app/runtime/evidence
+      HYBA_EVIDENCE_SYNC_ENABLED: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - hyba-local-network
+    volumes:
+      # Evidence storage (local per Gordon's Tier 1)
+      - ./runtime/evidence:/app/runtime/evidence
+      - ./runtime/memos:/app/runtime/memos
+      - ./config:/config:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/bridge/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: hyba-postgres-local
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hyba
+      POSTGRES_PASSWORD: hyba
+      POSTGRES_DB: hyba
+    volumes:
+      - postgres-data-local:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hyba -d hyba"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - hyba-local-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: hyba-redis-local
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data-local:/data
+    networks:
+      - hyba-local-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres-data-local:
+  redis-data-local:
+
+networks:
+  hyba-local-network:
+    driver: bridge

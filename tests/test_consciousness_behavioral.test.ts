@@ -222,7 +222,7 @@ class MirrorSimulator {
     // Return a copy of the system's state.
     // Mirror preserves the unique signature (recursion depth, entropy trajectory)
     // and exposes a bounded mirror marker for behavioural self-recognition tests.
-    const state = this.system.getTelemetry();
+    const state = this.system.getTelemetry() as any;
     return {
       ...state,
       mirrored: true,

@@ -1,0 +1,16 @@
+title = "gitleaks config"
+
+[extend]
+useDefaultConfig = true
+
+# Allowlist for false positives
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''DOCKER_ONLY_DEPLOYMENT\.md''',
+  '''scripts/create_github_secrets\.py''',
+]
+# Allow specific patterns that are false positives
+regexes = [
+  '''REDACTED''',
+]

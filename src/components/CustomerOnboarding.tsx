@@ -94,7 +94,8 @@ export function CustomerOnboarding({ onComplete }: { onComplete: () => void }) {
     {
       id: "provision",
       title: "Provision Your CIaaS Rail",
-      description: "Choose the intelligence runtime that will transform your workload with evidence boundaries.",
+      description:
+        "Choose the intelligence runtime that will transform your workload with evidence boundaries.",
       action: "Provision",
       completed: false,
     },
@@ -108,7 +109,8 @@ export function CustomerOnboarding({ onComplete }: { onComplete: () => void }) {
     {
       id: "quick_win",
       title: "Bring Your Workload",
-      description: "Launch Workload Studio with your key already available for live CIaaS execution.",
+      description:
+        "Launch Workload Studio with your key already available for live CIaaS execution.",
       action: "Open Workload Studio",
       completed: false,
     },
@@ -166,12 +168,18 @@ export function CustomerOnboarding({ onComplete }: { onComplete: () => void }) {
                       : "border-slate-600 bg-slate-800 text-slate-400"
                   }`}
                 >
-                  {idx < currentStep ? <CheckCircle2 className="h-5 w-5" /> : <span>{idx + 1}</span>}
+                  {idx < currentStep ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <span>{idx + 1}</span>
+                  )}
                 </div>
                 <span className="mt-2 text-xs text-slate-400">{step.title}</span>
               </div>
               {idx < steps.length - 1 && (
-                <div className={`h-0.5 flex-1 ${idx < currentStep ? "bg-blue-500" : "bg-slate-700"}`} />
+                <div
+                  className={`h-0.5 flex-1 ${idx < currentStep ? "bg-blue-500" : "bg-slate-700"}`}
+                />
               )}
             </React.Fragment>
           ))}
@@ -189,19 +197,27 @@ export function CustomerOnboarding({ onComplete }: { onComplete: () => void }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
                   <h3 className="mb-2 font-bold text-white">CIaaS</h3>
-                  <p className="text-sm text-slate-400">Computational intelligence runtime and evidence packet.</p>
+                  <p className="text-sm text-slate-400">
+                    Computational intelligence runtime and evidence packet.
+                  </p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
                   <h3 className="mb-2 font-bold text-white">Evidence Boundary</h3>
-                  <p className="text-sm text-slate-400">Trace, provenance, limitations, and human approval preserved.</p>
+                  <p className="text-sm text-slate-400">
+                    Trace, provenance, limitations, and human approval preserved.
+                  </p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
                   <h3 className="mb-2 font-bold text-white">Workload Studio</h3>
-                  <p className="text-sm text-slate-400">Bring risk, board, incident, or audit artifacts.</p>
+                  <p className="text-sm text-slate-400">
+                    Bring risk, board, incident, or audit artifacts.
+                  </p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
                   <h3 className="mb-2 font-bold text-white">Buyer Proof</h3>
-                  <p className="text-sm text-slate-400">Run the API and export the packet for review.</p>
+                  <p className="text-sm text-slate-400">
+                    Run the API and export the packet for review.
+                  </p>
                 </div>
               </div>
             </div>
@@ -255,7 +271,8 @@ export function CustomerOnboarding({ onComplete }: { onComplete: () => void }) {
                     {apiKey}
                   </code>
                   <p className="mt-3 text-xs text-slate-500">
-                    Stored in this browser for the Workload Studio demo handoff. Key ID: {apiKeyId || "pending"}.
+                    Stored in this browser for the Workload Studio demo handoff. Key ID:{" "}
+                    {apiKeyId || "pending"}.
                   </p>
                 </div>
               )}

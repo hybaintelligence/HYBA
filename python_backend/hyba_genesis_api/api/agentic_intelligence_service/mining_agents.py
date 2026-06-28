@@ -29,6 +29,7 @@ from .service import (
     AgentMarketplace,
     TokenOptimizationEngine,
     GPUScalingCoordinator,
+    GPUScalingConfig,
 )
 
 

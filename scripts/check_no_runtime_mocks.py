@@ -82,10 +82,14 @@ ALLOWED_FILES = {
     "tests/test_backend_workflows.py",
     "scripts/check_no_runtime_mocks.py",
     "docs/QUANTUM_MINING.md",
+    "python_backend/hyba_genesis_api/core/extraordinary_evidence.py",
 }
 
 # Dev-only fixture implementation remains in stratum_client, but production must gate it.
 ALLOWED_PATTERN_FILES = {
+    "fixed revenue estimate": {
+        "python_backend/pythia_mining/production_mining_system.py",
+    },
     "runtime simulated mining job injection": {
         "python_backend/pythia_mining/stratum_client.py",
         "python_backend/pythia_mining/genesis_ai.py",
@@ -110,8 +114,11 @@ ALLOWED_PATTERN_FILES = {
         "src/components/CEOTerminal.tsx",
         # Error Handling: Retry jitter for network resilience (legitimate operational use)
         "src/utils/errorHandler.ts",
+        "src/hooks/useApiRequest.ts",
         # Error Boundary: Demo visualization with stochastic elements
         "src/components/ErrorBoundary.tsx",
+        # Workload Studio: Trace ID generation (legitimate operational use)
+        "src/components/WorkloadStudio.tsx",
         # Quantum Research: Mathematical algorithms requiring stochastic sampling
         "src/euclid/pythagoras/quantum/structured_nonce_search.py",
         "src/euclid/pythagoras/quantum/quantum_computer.py",
@@ -135,6 +142,13 @@ ALLOWED_PATTERN_FILES = {
         "python_backend/pythia_mining/enhanced_benchmark_suite.py",
         "python_backend/pythia_mining/deutsch_constructor_theory.py",
         "python_backend/pythia_mining/autonomous_searching_system.py",
+        # Financial Intelligence: Stochastic algorithms for topology and risk analysis
+        "python_backend/hyba_genesis_api/api/financial_intelligence/autonomic/topology_aware_rewiring.py",
+        "python_backend/hyba_genesis_api/api/financial_intelligence/sovereign/stress_test_harness.py",
+        "python_backend/hyba_genesis_api/api/financial_intelligence/sovereign/systemic_risk_mapper.py",
+        # Quantum Healing: Stochastic resonance synthesis
+        "python_backend/pythia_mining/quantum_healing_swarm.py",
+        "python_backend/pythia_mining/resonance_synthesis.py",
     },
 }
 

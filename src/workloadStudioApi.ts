@@ -10,7 +10,12 @@ type CustomerCIAASService = {
 };
 
 type CustomerWorkloadRequest = {
-  workload_type: "explain" | "orchestrate" | "counterfactual" | "governance_audit" | "substrate_health";
+  workload_type:
+    | "explain"
+    | "orchestrate"
+    | "counterfactual"
+    | "governance_audit"
+    | "substrate_health";
   context: Record<string, unknown>;
   substrates?: Array<"penrose_or" | "iit_4" | "deutsch">;
   idempotency_key?: string;

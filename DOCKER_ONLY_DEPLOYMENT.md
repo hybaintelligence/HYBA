@@ -89,8 +89,7 @@ docker logs hyba-miner
 curl http://127.0.0.1:3000/bridge/health
 
 # Check backend health
-curl http://127.0.0.1:3001/health
-```
+curl http://127.0.0.1:3001/api/health/readiness
 
 ---
 

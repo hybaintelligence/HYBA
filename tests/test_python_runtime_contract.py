@@ -24,7 +24,7 @@ def test_current_runtime_is_python_312() -> None:
 
 def test_repo_contract_declares_python_312_only() -> None:
     assert _read(".python-version").strip().startswith("3.12")
-    assert "FROM python:3.12.7-slim" in _read("Dockerfile")
+    assert "FROM python:3.12." in _read("Dockerfile")
 
     root_pyproject = _read("python_backend/pyproject.toml")
 

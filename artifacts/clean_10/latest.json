@@ -1,304 +1,31 @@
 {
-  "generated_at_utc": "2026-06-19T15:36:44.111265+00:00",
+  "generated_at_utc": "2026-06-26T19:17:32.797849+00:00",
   "next_actions": [
     "Do not describe the repository as clean until required failures are zero.",
-    "Open the referenced per-command logs, fix the first failing command, and rerun this gate."
+    "Use each failed result's embedded log_tail first, then open the referenced full log if needed.",
+    "Fix the first failing command group and rerun this gate."
   ],
   "passed": false,
   "repository": "HYBA_FULLSTACK",
   "required_failures": [
-    "frontend_unit_gate",
-    "backend_gate"
+    "minimal_fail"
   ],
   "results": [
     {
       "command": [
-        "npm",
-        "run",
-        "python:env:check"
+        "C:\\Python311\\python.exe",
+        "-c",
+        "raise SystemExit(7)"
       ],
-      "duration_seconds": 0.34188,
-      "log_path": "artifacts/clean_10/20260619T153158Z/python_backend_environment.log",
-      "name": "python_backend_environment",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_review_gap_closure_matrix.py",
-        "-q"
+      "duration_seconds": 0.758381,
+      "log_path": "artifacts\\clean_10\\20260626T191732Z\\minimal_fail.log",
+      "log_tail": [
+        "$ C:\\Python311\\python.exe -c raise SystemExit(7)",
+        ""
       ],
-      "duration_seconds": 0.320552,
-      "log_path": "artifacts/clean_10/20260619T153158Z/review_gap_closure_matrix.log",
-      "name": "review_gap_closure_matrix",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_agent3_quantum_solvers.py",
-        "-q"
-      ],
-      "duration_seconds": 0.53247,
-      "log_path": "artifacts/clean_10/20260619T153158Z/quantum_solver_job_plumbing.log",
-      "name": "quantum_solver_job_plumbing",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_hendrix_phi_solver_contracts.py",
-        "-q"
-      ],
-      "duration_seconds": 0.480968,
-      "log_path": "artifacts/clean_10/20260619T153158Z/hendrix_phi_solver_contracts.log",
-      "name": "hendrix_phi_solver_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_hendrix_phi_performance_benchmark.py",
-        "-q"
-      ],
-      "duration_seconds": 2.141611,
-      "log_path": "artifacts/clean_10/20260619T153158Z/hendrix_job_backed_benchmarks.log",
-      "name": "hendrix_job_backed_benchmarks",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_iit_4_analyzer.py",
-        "tests/test_iit_4_complete.py",
-        "tests/test_iit_phi_mining_correlation.py",
-        "-q"
-      ],
-      "duration_seconds": 0.605688,
-      "log_path": "artifacts/clean_10/20260619T153158Z/iit_phi_proxy_contracts.log",
-      "name": "iit_phi_proxy_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_api_posture_serialization.py",
-        "-q"
-      ],
-      "duration_seconds": 0.4934,
-      "log_path": "artifacts/clean_10/20260619T153158Z/api_posture_serialization.log",
-      "name": "api_posture_serialization",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_backend_mining_api.py",
-        "-q"
-      ],
-      "duration_seconds": 1.291016,
-      "log_path": "artifacts/clean_10/20260619T153158Z/backend_mining_api_contracts.log",
-      "name": "backend_mining_api_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_auth_jwt_contracts.py",
-        "-q"
-      ],
-      "duration_seconds": 0.75573,
-      "log_path": "artifacts/clean_10/20260619T153158Z/auth_jwt_contracts.log",
-      "name": "auth_jwt_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_runtime_reflexive_introspection.py",
-        "-q"
-      ],
-      "duration_seconds": 1.829236,
-      "log_path": "artifacts/clean_10/20260619T153158Z/runtime_reflexive_introspection.log",
-      "name": "runtime_reflexive_introspection",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_evidence_boundary_report.py",
-        "-q"
-      ],
-      "duration_seconds": 0.338828,
-      "log_path": "artifacts/clean_10/20260619T153158Z/evidence_boundary_report.log",
-      "name": "evidence_boundary_report",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_adaptive_capability_registry.py",
-        "-q"
-      ],
-      "duration_seconds": 0.327009,
-      "log_path": "artifacts/clean_10/20260619T153158Z/adaptive_capability_registry.log",
-      "name": "adaptive_capability_registry",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_claim_evidence_manifest.py",
-        "-q"
-      ],
-      "duration_seconds": 0.340713,
-      "log_path": "artifacts/clean_10/20260619T153158Z/claim_evidence_manifest.log",
-      "name": "claim_evidence_manifest",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_prediction_endpoint.py",
-        "-q"
-      ],
-      "duration_seconds": 0.699058,
-      "log_path": "artifacts/clean_10/20260619T153158Z/prediction_endpoint_contracts.log",
-      "name": "prediction_endpoint_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_pool_profile_primitives.py",
-        "-q"
-      ],
-      "duration_seconds": 0.437196,
-      "log_path": "artifacts/clean_10/20260619T153158Z/pool_profile_primitives.log",
-      "name": "pool_profile_primitives",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_mining_autonomous_sovereign_gate.py",
-        "-q"
-      ],
-      "duration_seconds": 0.338699,
-      "log_path": "artifacts/clean_10/20260619T153158Z/autonomous_sovereign_gate_contracts.log",
-      "name": "autonomous_sovereign_gate_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "/Users/demouser/.pyenv/versions/3.12.0/bin/python",
-        "-m",
-        "pytest",
-        "tests/test_local_launch_script_contract.py",
-        "-q"
-      ],
-      "duration_seconds": 0.321146,
-      "log_path": "artifacts/clean_10/20260619T153158Z/local_launch_contracts.log",
-      "name": "local_launch_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "npx",
-        "vitest",
-        "run",
-        "tests/test_bridge_security.test.ts",
-        "tests/test_security_swarm_routes.test.ts",
-        "tests/test_consciousness_behavioral.test.ts"
-      ],
-      "duration_seconds": 0.975583,
-      "log_path": "artifacts/clean_10/20260619T153158Z/frontend_bridge_and_security_contracts.log",
-      "name": "frontend_bridge_and_security_contracts",
-      "passed": true,
-      "returncode": 0
-    },
-    {
-      "command": [
-        "npm",
-        "run",
-        "test:frontend:unit"
-      ],
-      "duration_seconds": 7.875447,
-      "log_path": "artifacts/clean_10/20260619T153158Z/frontend_unit_gate.log",
-      "name": "frontend_unit_gate",
+      "name": "minimal_fail",
       "passed": false,
-      "returncode": 1
-    },
-    {
-      "command": [
-        "npm",
-        "run",
-        "test:backend"
-      ],
-      "duration_seconds": 262.927161,
-      "log_path": "artifacts/clean_10/20260619T153158Z/backend_gate.log",
-      "name": "backend_gate",
-      "passed": false,
-      "returncode": 1
-    },
-    {
-      "command": [
-        "npm",
-        "run",
-        "build"
-      ],
-      "duration_seconds": 1.846578,
-      "log_path": "artifacts/clean_10/20260619T153158Z/build_gate.log",
-      "name": "build_gate",
-      "passed": true,
-      "returncode": 0
+      "returncode": 7
     }
   ],
   "schema": "HYBA_FULLSTACK_LOCAL_CLEAN_10_GATE_V1",

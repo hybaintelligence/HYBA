@@ -8,9 +8,7 @@ local/test environments that do not yet have commercial persistence tables.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-
-UTC = timezone.utc, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any
 
 from sqlalchemy import func
@@ -47,7 +45,7 @@ class RevenueAnalytics:
     def compute_arr(self, end_date: datetime | None = None) -> float:
         """Annualize revenue recorded during the trailing 30-day window."""
         if end_date is None:
-            end_date = datetime.now(UTC)
+            end_date = datetime.now(timezone.utc)
         _tenant, workload_execution = self._models()
         if workload_execution is None:
             return 0.0
@@ -75,7 +73,7 @@ class RevenueAnalytics:
     def churn_risk_score(self, tenant_id: str, now: datetime | None = None) -> int:
         """Score 0-100: likelihood that customer will churn based on inactivity."""
         if now is None:
-            now = datetime.now(UTC)
+            now = datetime.now(timezone.utc)
         _tenant, workload_execution = self._models()
         if workload_execution is None:
             return 100
@@ -87,7 +85,7 @@ class RevenueAnalytics:
         if not last_activity:
             return 100
         if last_activity.tzinfo is None:
-            last_activity = last_activity.replace(tzinfo=UTC)
+            last_activity = last_activity.replace(tzinfo=timezone.utc)
         days_inactive = (now - last_activity).days
         if days_inactive > 90:
             return 90

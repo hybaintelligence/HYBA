@@ -17,7 +17,7 @@ if str(backend_root) not in sys.path:
 
 def test_execute_reproducibility_replay_healing_applied():
     """Test that Salamander healing was applied correctly."""
-    module_path = Path("C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\replay_executor.py")
+    module_path = Path(r"C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\replay_executor.py")
     if not module_path.exists():
         pytest.skip(f"Module not found: {module_path}")
     
@@ -34,7 +34,7 @@ def test_execute_reproducibility_replay_healing_applied():
 
 def test_execute_reproducibility_replay_functionality_preserved():
     """Test that basic functionality is preserved after healing."""
-    module_path = Path("C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\replay_executor.py")
+    module_path = Path(r"C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\replay_executor.py")
     if not module_path.exists():
         pytest.skip(f"Module not found: {module_path}")
     

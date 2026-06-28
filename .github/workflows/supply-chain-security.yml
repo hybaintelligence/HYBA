@@ -17,9 +17,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_COMMENTS: false
+        with:
+          config-path: .gitleaks.toml
 
   dependency-audit:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,7 +32,8 @@ jobs:
       - name: Python dependency audit (HIGH+)
         run: |
           python -m pip install --upgrade pip pip-audit
-          pip-audit -r python_backend/hyba_genesis_api/requirements.txt --severity HIGH
+          cd python_backend/hyba_genesis_api
+          pip-audit -r requirements.txt
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://backend:3001
+    networks:
+      - hyba-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - HYBA_GOVERNANCE_RAIL=enterprise
+      - HYBA_BOOTSTRAP_KNOWLEDGE_BASE: 'true'
+      - HYBA_INITIAL_ACTION_SEQUENCE: 'true'
+      - HYBA_LEARNING_FROM_BLOCKCHAIN: 'true'
+    volumes:
+      - hyba_persistence:/app/persistence
+    networks:
+      - hyba-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  hyba-network:
+
+volumes:
+  hyba_persistence:

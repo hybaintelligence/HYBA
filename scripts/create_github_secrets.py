@@ -82,9 +82,7 @@ def encrypt_secret(public_key_str, secret_value):
     
     # Encrypt the secret
     encrypted = nacl.public.SealedBox(public_key).encrypt(secret_value.encode("utf-8"))
-    
-    # Return base64-encoded ciphertext
-    return base64.b64encode(encrypted.ciphertext).decode("utf-8")
+    return base64.b64encode(encrypted).decode("utf-8")
 
 
 def create_secret(token, secret_name, secret_value, public_key_info):

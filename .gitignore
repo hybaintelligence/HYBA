@@ -45,3 +45,20 @@ venv/
 .venv/
 .env.local
 coverage/
+.hypothesis/
+logs/
+OneDrive/
+npm-shrinkwrap.json
+vite.config.build.ts
+artifacts/clean_10/
+
+# Debug / scratch scripts
+backups/
+demo_data/
+python_backend/debug_*.py
+python_backend/hyba_genesis_api/redis_registry.py
+src/revenue.py
+src/salamander_operations.py
+src/utils/random.js
+src/components/SomeComponent.vue
+REVIEW_FROM_*.md

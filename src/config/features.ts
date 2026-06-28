@@ -59,7 +59,7 @@ export const FEATURES: FeatureFlags = {
 
   // Debug/runtime transport
   SHOW_DEBUG_PANEL: isDevelopment && isInternalMode && !isCustomerMode,
-  ENABLE_WEBSOCKET: envFlag("VITE_ENABLE_WEBSOCKET", true),
+  ENABLE_WEBSOCKET: envFlag("VITE_ENABLE_WEBSOCKET", false),
 };
 
 /**

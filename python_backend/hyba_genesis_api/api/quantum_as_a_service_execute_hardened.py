@@ -11,6 +11,13 @@ This implements all missing production features:
 Replace the execute() method in _VirtualFaultTolerantQuantumComputer class with this.
 """
 
+import hashlib
+import json
+import math
+import time
+from datetime import datetime, UTC
+from typing import Dict, Any
+
 
 def execute(self, request: QuantumWorkloadRequest) -> Dict[str, Any]:
     qubits = self._validate_workload(request)

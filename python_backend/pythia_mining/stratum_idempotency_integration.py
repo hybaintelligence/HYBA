@@ -310,12 +310,13 @@ class StratumIdempotencyDashboard:
         # Calculate ratios
         retry_success_rate = retries / duplicates * 100 if duplicates > 0 else 0.0
 
+        failed_retries = duplicates - retries
         return {
             "duplicate_attempts": duplicates,
             "successful_retries": retries,
-            "failed_retries": duplicates - retries,
+            "failed_retries": failed_retries,
             "retry_success_rate": retry_success_rate,
-            "indicates_attack": false_positives > duplicates * 0.1,  # Heuristic
+            "indicates_attack": failed_retries > duplicates * 0.1,  # Heuristic
         }
 
 

@@ -168,7 +168,7 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
     engine = get_engine()
     controller = engine.autonomous_controller
     timeout_seconds = float(
-        os.getenv("HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS", "15.0")
+        os.getenv("HYBA_STARTUP_SELF_HEALING_TIMEOUT_SECONDS", "3.0")
     )
     logging.info(
         "HYBA API startup: activating PYTHIA self-healing/self-optimising cycle",
@@ -177,40 +177,50 @@ async def _activate_startup_self_healing(app: FastAPI) -> None:
             "timeout_seconds": timeout_seconds,
         },
     )
-    report = await asyncio.wait_for(
-        controller.boot_self_heal_and_optimize(),
-        timeout=max(0.1, timeout_seconds),
-    )
-    app.state.startup_self_healing_report = report
-    save_autonomy_report(report, report_type="startup")
-    
-    # Generate executive startup memo for Evidence Package
     try:
-        from hyba_genesis_api.core.startup_memo_generator import StartupMemoGenerator
-        substrate_state = get_substrate_state()
-        memo_path = StartupMemoGenerator.save_startup_memo(report, substrate_state)
+        report = await asyncio.wait_for(
+            controller.boot_self_heal_and_optimize(),
+            timeout=max(0.1, timeout_seconds),
+        )
+        app.state.startup_self_healing_report = report
+        save_autonomy_report(report, report_type="startup")
+        
+        # Generate executive startup memo for Evidence Package
+        try:
+            from hyba_genesis_api.core.startup_memo_generator import StartupMemoGenerator
+            substrate_state = get_substrate_state()
+            memo_path = StartupMemoGenerator.save_startup_memo(report, substrate_state)
+            logging.info(
+                "HYBA API startup: Optimization memo generated",
+                extra={"memo_path": str(memo_path)}
+            )
+        except Exception as memo_err:
+            logging.warning(
+                "HYBA API startup: Failed to generate optimization memo",
+                extra={"error": str(memo_err)}
+            )
+        
         logging.info(
-            "HYBA API startup: Optimization memo generated",
-            extra={"memo_path": str(memo_path)}
+            "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
+            extra={
+                "duration_ms": report.get("duration_ms"),
+                "proposals_applied": report.get("reflexive_report", {}).get(
+                    "proposals_applied"
+                ),
+                "reflexive_cycle_count": report.get("after", {}).get(
+                    "reflexive_cycle_count"
+                ),
+            },
         )
-    except Exception as memo_err:
+    except asyncio.TimeoutError:
         logging.warning(
-            "HYBA API startup: Failed to generate optimization memo",
-            extra={"error": str(memo_err)}
+            "HYBA startup self-healing timeout; skipping to continue startup",
+            extra={"timeout_seconds": timeout_seconds},
         )
-    
-    logging.info(
-        "HYBA API startup: PYTHIA self-healing/self-optimising cycle complete",
-        extra={
-            "duration_ms": report.get("duration_ms"),
-            "proposals_applied": report.get("reflexive_report", {}).get(
-                "proposals_applied"
-            ),
-            "reflexive_cycle_count": report.get("after", {}).get(
-                "reflexive_cycle_count"
-            ),
-        },
-    )
+        app.state.startup_self_healing_report = {
+            "status": "timeout",
+            "timeout_seconds": timeout_seconds,
+        }
 
 
 async def _load_memory_seed(app: FastAPI) -> None:
@@ -299,13 +309,17 @@ async def lifespan(app: FastAPI):
 
     unified_mining.initialize_engine_with_lock_manager(lock_manager)
 
-    try:
-        await _activate_startup_self_healing(app)
-    except Exception as exc:
-        logging.warning(
-            "HYBA startup self-healing cycle failed; backend continuing",
-            extra={"error": str(exc)},
-        )
+    # Skip startup self-healing in test/CI environments to prevent hangs
+    if os.getenv("HYBA_SKIP_STARTUP_SELF_HEALING", "").lower() not in {"1", "true", "yes"}:
+        try:
+            await _activate_startup_self_healing(app)
+        except Exception as exc:
+            logging.warning(
+                "HYBA startup self-healing cycle failed; backend continuing",
+                extra={"error": str(exc)},
+            )
+    else:
+        logging.info("Startup self-healing skipped by HYBA_SKIP_STARTUP_SELF_HEALING")
     heartbeat = None
     heartbeat_task = None
     if os.getenv("HYBA_ENABLE_REFLEXIVE_DAEMON", "false").lower() == "true":
