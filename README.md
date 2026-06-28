@@ -62,6 +62,8 @@ Quantum mathematics first
 
 This is why the platform is described as what comes after quantum: the mathematical invariants are portable across CPU, GPU, TPU, ASIC-adjacent, distributed, and future quantum hardware substrates.
 
+**Position on Computational Complexity (BQP vs. Classical):** HYBA's φ-fold framework does not claim BQP ⊆ P or universal quantum supremacy on classical hardware. The framework targets a specific subclass of quantum-formal operations — φ-resonance transforms, reversible memory folding, and substrate-invariant quantum-state evolution — that can be executed efficiently on classical substrates via the Golden-ratio computational grammar. This is analogous to how classical simulation of quantum circuits is efficient for certain restricted circuit classes (e.g., Clifford circuits). The Quantum Substrate Invariance Ledger (`QUANTUM_SUBSTRATE_INVARIANCE_LEDGER.md`) provides the formal falsifiable boundary: the claim is that φ-fold mathematics preserves quantum-formal invariants across execution surfaces, not that all of BQP is contained in P.
+
 ---
 
 ## 3. Product boundary
