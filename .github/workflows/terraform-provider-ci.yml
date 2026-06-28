@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: 'terraform-provider-hyba/go.sum'
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           working-directory: terraform-provider-hyba
