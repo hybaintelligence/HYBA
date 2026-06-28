@@ -17,7 +17,7 @@ if str(backend_root) not in sys.path:
 
 def test__force_mlx_execution_healing_applied():
     """Test that Salamander healing was applied correctly."""
-    module_path = Path("C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\apple_silicon_metal.py")
+    module_path = Path(r"C:\Users\USER\OneDrive\Desktop\HYBA_FULLSTACK\python_backend\pythia_mining\apple_silicon_metal.py")
     if not module_path.exists():
         pytest.skip(f"Module not found: {module_path}")
     
