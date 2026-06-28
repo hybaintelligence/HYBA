@@ -218,8 +218,12 @@ def _check_unified_engine_contract() -> CheckResult:
             "pulvini_phi_compressed_pre_search",
             "phi_tiled_full_space_exploration",
         }
-        if metrics.get("nonce_space_contract") not in allowed_nonce_contracts:
-            failures.append("optimizer did not configure a PULVINI nonce-space contract")
+        nonce_space_contract = metrics.get("nonce_space_contract")
+        if nonce_space_contract not in allowed_nonce_contracts:
+            failures.append(
+                f"optimizer did not configure an allowed PULVINI nonce-space contract "
+                f"(configured: {nonce_space_contract!r})"
+            )
         if metrics.get("complete_nonce_coverage") is not True:
             failures.append("PULVINI nonce plan does not report complete coverage")
         if metrics.get("overlap_free_nonce_coverage") is not True:
