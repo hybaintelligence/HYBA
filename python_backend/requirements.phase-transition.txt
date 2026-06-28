@@ -1,7 +1,7 @@
 # HYBA Phase Transition runtime: single dependency lock for API + PULVINI mining.
 # This image contains the numerical muscle (NumPy/SciPy), FastAPI surface,
 # Stratum clients, auth, telemetry, and production operations dependencies.
-fastapi==0.136.1
+fastapi==0.138.1
 uvicorn[standard]==0.47.0
 pydantic==2.13.4
 pydantic-settings==2.14.1
