@@ -1572,7 +1572,7 @@ function AppContent() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     {products.map((product) => (
                       <div
-                        key={product.id || product.name}
+                        key={`${fmtText(product.id)}-${fmtText(product.name)}`}
                         className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
                       >
                         <h5 className="truncate text-sm font-black text-slate-950">
@@ -1875,7 +1875,7 @@ function TrustFact({ label, value }: { label: string; value: string }) {
 }
 
 function AuthInput({
-  _id,
+  id,
   label,
   value,
   setValue,
@@ -1889,7 +1889,7 @@ function AuthInput({
   type: string;
   placeholder: string;
 }) {
-  const inputId = `auth-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const inputId = id || `auth-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div className="space-y-2">
       <label

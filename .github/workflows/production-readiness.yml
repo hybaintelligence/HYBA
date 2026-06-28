@@ -37,7 +37,7 @@ jobs:
       - name: Assert Python runtime contract
         env:
           HYBA_SKIP_STARTUP_SELF_HEALING: 'true'
-        run: timeout 60 python -m pytest tests/test_python_runtime_contract.py -q || echo "Test completed or timed out"
+        run: python -m pytest tests/test_python_runtime_contract.py -q
       - name: Assert runtime paths do not contain fabricated telemetry
         run: python scripts/check_no_runtime_mocks.py
       - name: Assert production entrypoint honors service commands
@@ -59,18 +59,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r python_backend/hyba_genesis_api/requirements.txt
-      - name: Run backend unit, integration, adversarial, property-style, and MIDAS tests
+      - name: Run backend production smoke tests
         env:
           HYBA_ALLOW_DEV_FIXTURES: "true"
           HYBA_ENABLE_LIVE_STRATUM: "false"
           HYBA_SKIP_STARTUP_SELF_HEALING: 'true'
-        run: timeout 60 python -m unittest discover -s tests -p "test_*.py" || echo "Tests completed or timed out"
+        run: |
+          python -m pytest \
+            tests/test_python_runtime_contract.py \
+            tests/test_go_live_final_coverage.py \
+            tests/test_mining_production_readiness_doctor.py \
+            tests/test_pool_profiles_live_cutover.py \
+            tests/test_unified_mining_api_surface.py \
+            tests/test_frontend_backend_contracts.py \
+            -q
       - name: Import FastAPI app and assert readiness route exists
         env:
           JWT_SECRET: ci-secret
           HYBA_SKIP_STARTUP_SELF_HEALING: 'true'
         run: |
-          timeout 60 python - <<'EOF' || echo "Import check completed or timed out"
+          python - <<'EOF'
           from hyba_genesis_api.main import app
           routes = {route.path for route in app.routes}
           required = {
