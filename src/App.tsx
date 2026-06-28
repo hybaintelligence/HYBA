@@ -40,6 +40,7 @@ import {
 import FEATURES, { hasInternalAccess } from "./config/features";
 import { CustomerOnboarding } from "./components/CustomerOnboarding";
 import { PricingPage } from "./components/PricingPage";
+import { useWebSocket } from "./components/WebSocketProvider";
 
 import {
   type AuthResponse,
@@ -244,6 +245,8 @@ function AppContent() {
   >(() => (window.location.pathname === "/workload-studio" ? "workloadStudio" : "dashboard"));
 
   const { execute: fetchTelemetryExecute } = useApiRequest(fetchTelemetryData, { maxRetries: 3 });
+  const { telemetry: websocketTelemetry, isConnected: isWebSocketConnected, error: websocketError } =
+    useWebSocket();
   const {
     isConnected,
     latencyMs,
@@ -480,12 +483,27 @@ function AppContent() {
   }, [fetchProfile, fetchProducts]);
 
   useEffect(() => {
-    if (isPollingActive) getLiveTelemetry();
+    if (websocketTelemetry) {
+      setTelemetry(websocketTelemetry);
+      setTelemetryError(null);
+      recordPing(websocketTelemetry.latency || 0, isWebSocketConnected);
+    }
+  }, [isWebSocketConnected, recordPing, websocketTelemetry]);
+
+  useEffect(() => {
+    if (websocketError && !telemetry) {
+      setTelemetryError(websocketError);
+    }
+  }, [telemetry, websocketError]);
+
+  useEffect(() => {
+    const shouldPoll = isPollingActive && !isWebSocketConnected;
+    if (shouldPoll) getLiveTelemetry();
     const interval = window.setInterval(() => {
-      if (isPollingActive) getLiveTelemetry();
+      if (shouldPoll) getLiveTelemetry();
     }, 15000);
     return () => window.clearInterval(interval);
-  }, [getLiveTelemetry, isPollingActive]);
+  }, [getLiveTelemetry, isPollingActive, isWebSocketConnected]);
 
   useEffect(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -1572,7 +1590,7 @@ function AppContent() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     {products.map((product) => (
                       <div
-                        key={product.id || product.name}
+                        key={fmtText(product.id || product.name)}
                         className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
                       >
                         <h5 className="truncate text-sm font-black text-slate-950">
@@ -1875,7 +1893,7 @@ function TrustFact({ label, value }: { label: string; value: string }) {
 }
 
 function AuthInput({
-  _id,
+  id: _id,
   label,
   value,
   setValue,
